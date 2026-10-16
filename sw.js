@@ -7,12 +7,13 @@
    toujours venir du réseau. Seule la coque statique de repere-ci est
    concernée — pas les appels vers onrender.com. */
 
-const CACHE = 'repere-ci-coque-v2';
+const CACHE = 'repere-ci-coque-v3';
 
 const FICHIERS_COQUE = [
   './',
   './index.html',
   './lieu.html',
+  './suivi.html',
   './repere.css',
   './repere-api.js',
   './repere-app.js',

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#F5F8F9"/>
+<meta name="description" content="Suis un trajet en direct sur Repère CI."/>
+<title>Trajet en direct — Repère CI</title>
+<link rel="icon" href="logo-icon.svg"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="repere.css"/>
+<style>
+/* Page web, pas écran de l'application : elle défile normalement, sans
+   onglets ni inscription — exactement comme lieu.html. */
+html,body{overflow:auto;height:auto}
+#page{max-width:560px;margin:0 auto;min-height:100vh;background:var(--bg);
+  box-shadow:0 0 0 1px var(--line);
+  display:flex;flex-direction:column}
+@media(max-width:600px){#page{border:0}}
+.url{display:flex;align-items:center;gap:11px;padding:11px 16px;background:var(--surface);
+  border-bottom:1px solid var(--line);font-size:12px;color:var(--ink-55)}
+.url svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex:none}
+.tete{padding:20px 16px 17px;display:flex;flex-direction:column;gap:11px}
+.tete h1{font-size:23px;font-weight:800;letter-spacing:-.025em;line-height:1.15;text-wrap:pretty}
+#suiviMap{height:340px;margin:0 16px;border-radius:26px;overflow:hidden;box-shadow:0 8px 24px rgba(10,40,50,.12)}
+.bas{padding:16px;display:flex;flex-direction:column;gap:11px}
+.pastille{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700}
+.pastille .pt{width:9px;height:9px;border-radius:50%;background:var(--accent)}
+.pastille.perime .pt{background:var(--ink-40)}
+</style>
+</head>
+<body>
+<div id="page">
+
+  <div class="url">
+    <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
+    <span class="mn" id="urlAffiche">repere.ci</span>
+  </div>
+
+  <div class="tete">
+    <span class="lab acc" id="entete">Trajet en direct</span>
+    <h1 id="titre">Chargement…</h1>
+    <span class="pastille" id="pastille" style="display:none">
+      <span class="pt"></span><span id="pastilleTexte">—</span>
+    </span>
+  </div>
+
+  <div id="suiviMap"></div>
+
+  <div class="bas">
+    <a class="cta out" id="btnApp" href="index.html">Obtenir mon propre repère<i>&rarr;</i></a>
+    <p class="sub" style="padding-top:6px">Fond de carte : © les contributeurs OpenStreetMap, licence ODbL.</p>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="repere-api.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const code = (params.get('c') || '').trim().toUpperCase();
+
+$('urlAffiche').textContent = location.host + location.pathname.replace(/.*\//, '/') +
+  (code ? '?c=' + code : '');
+
+const carte = L.map('suiviMap', { zoomControl: true, attributionControl: true })
+  .setView([ABIDJAN.lat, ABIDJAN.lng], 14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: ATTRIBUTION, maxZoom: 19, subdomains: 'abc'
+}).addTo(carte);
+carte.attributionControl.setPrefix('');
+
+const marque = (couleur) => L.divIcon({
+  className: '', iconSize: [24, 24], iconAnchor: [12, 12],
+  html: '<div style="width:24px;height:24px;border-radius:50%;background:' + couleur +
+        ';border:3px solid #fff;box-shadow:0 2px 8px rgba(10,40,50,.3),0 0 0 8px ' + couleur + '33"></div>'
+});
+
+let marqueurMoi = null, marqueurDest = null, cadre = false, minuteur = null;
+
+function depuis(iso) {
+  const s = Math.max(0, Math.round((Date.now() - new Date(iso + 'Z')) / 1000));
+  if (s < 60) return 'il y a ' + s + ' s';
+  return 'il y a ' + Math.round(s / 60) + ' min';
+}
+
+async function tick() {
+  if (!code) {
+    $('titre').textContent = 'Aucun trajet dans ce lien';
+    return;
+  }
+  try {
+    const d = await Api.suiviConsulter(code);
+    $('titre').textContent = d.destination && d.destination.nom
+      ? 'En route vers ' + d.destination.nom : 'En route';
+
+    if (marqueurMoi) carte.removeLayer(marqueurMoi);
+    marqueurMoi = L.marker([d.lat, d.lng], { icon: marque('#0F766E') }).addTo(carte);
+    if (d.destination && d.destination.lat != null && !marqueurDest) {
+      marqueurDest = L.marker([d.destination.lat, d.destination.lng], { icon: marque('#13232A') }).addTo(carte);
+    }
+    if (!cadre) {
+      cadre = true;
+      const pts = [[d.lat, d.lng]];
+      if (d.destination && d.destination.lat != null) pts.push([d.destination.lat, d.destination.lng]);
+      pts.length > 1 ? carte.fitBounds(L.latLngBounds(pts), { padding: [60, 60] }) : carte.setView([d.lat, d.lng], 16);
+    } else if (d.actif) {
+      carte.panTo([d.lat, d.lng], { animate: true });
+    }
+
+    const p = $('pastille');
+    p.style.display = 'inline-flex';
+    p.classList.toggle('perime', !d.actif);
+    $('pastilleTexte').textContent = d.termine
+      ? 'Trajet terminé'
+      : d.actif ? 'En direct — mis à jour ' + depuis(d.maj_le)
+                : 'Position plus reçue depuis ' + depuis(d.maj_le);
+
+    if (d.termine && minuteur) { clearInterval(minuteur); minuteur = null; }
+  } catch (e) {
+    $('titre').textContent = 'Trajet introuvable';
+    $('pastille').style.display = 'none';
+    if (minuteur) { clearInterval(minuteur); minuteur = null; }
+  }
+}
+
+tick();
+minuteur = setInterval(tick, 5000);
+</script>
+</body>
+</html>

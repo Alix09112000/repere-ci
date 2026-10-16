@@ -135,6 +135,17 @@ const Api = {
     return Api.json('/signalements/proches?lat=' + lat.toFixed(5) + '&lng=' + lng.toFixed(5) + '&rayon=' + rayon);
   },
   signaler(corps) { return Api.poster('/signalements', corps); },
+
+  // Suivi de trajet en direct
+  suiviCreer(corps) { return Api.poster('/suivi', corps); },
+  suiviMettreAJour(code, lat, lng) {
+    return Api.json('/suivi/' + encodeURIComponent(code), {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat: lat, lng: lng })
+    });
+  },
+  suiviConsulter(code) { return Api.json('/suivi/' + encodeURIComponent(code)); },
+  suiviTerminer(code) { return Api.json('/suivi/' + encodeURIComponent(code), { method: 'DELETE' }); },
   confirmer(id) { return Api.poster('/signalements/' + id + '/confirmer', {}); },
   infirmer(id) { return Api.poster('/signalements/' + id + '/infirmer', {}); },
   statsRoute() { return Api.json('/signalements/stats'); },

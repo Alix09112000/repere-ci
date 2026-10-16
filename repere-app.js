@@ -404,6 +404,15 @@ async function tracerTrajet(dest, nom) {
      On ne propose pas non plus de choix de tracé à ce moment-là — ce n'est
      pas le moment de comparer des options au volant. */
   const enGuidage = Nav.actif;
+  /* Tracer une destination différente abandonne le partage en cours : il
+     décrivait l'ancien trajet, pas le nouveau, et ne doit pas rester actif
+     sans que personne n'y pense. Un recalcul en cours de guidage (même
+     destination, juste écarté de la route) ne touche pas à ça. */
+  if (!enGuidage && Nav.suiviCode) {
+    Api.suiviTerminer(Nav.suiviCode).catch(() => {});
+    Nav.suiviCode = null;
+    majBoutonSuivi();
+  }
   const p = Geo.derniere;
   toast('Calcul du trajet…');
   try {
@@ -435,6 +444,11 @@ function finirTrajet() {
   $('feuilleBas').style.display = 'flex';
   coucheTrajet.clearLayers();
   if (marqueurDest) { map.removeLayer(marqueurDest); marqueurDest = null; }
+  if (Nav.suiviCode) {
+    Api.suiviTerminer(Nav.suiviCode).catch(() => {});
+    Nav.suiviCode = null;
+    majBoutonSuivi();
+  }
 }
 
 $('tFermer').addEventListener('click', finirTrajet);
@@ -459,6 +473,8 @@ const Nav = {
   etape: 0,
   annonces: {},         // manœuvres déjà dites, pour ne pas se répéter
   horsRoute: 0,
+  suiviCode: null,      // code du partage de trajet en direct, s'il est actif
+  suiviDernierEnvoi: 0, // horodatage du dernier point poussé au serveur
 
   /* Projection d'un point sur un segment. Rend l'écart en mètres et la
      fraction parcourue du segment. À l'échelle d'une ville, la projection
@@ -610,6 +626,14 @@ const Nav = {
     marqueurMoi = L.marker([pos.lat, pos.lng], { icon: carre(15, '#0F766E', true) }).addTo(map);
     map.setView([pos.lat, pos.lng], Math.max(map.getZoom(), 16), { animate: true });
 
+    /* Un point toutes les douze secondes suffit à suivre quelqu'un en direct,
+       et ménage la base comme la batterie — un point à chaque relevé GPS (une
+       à trois secondes) ne rendrait pas le suivi plus utile pour un proche. */
+    if (Nav.suiviCode && Date.now() - Nav.suiviDernierEnvoi > 12000) {
+      Nav.suiviDernierEnvoi = Date.now();
+      Api.suiviMettreAJour(Nav.suiviCode, pos.lat, pos.lng).catch(() => {});
+    }
+
     const pr = Nav.progres(pos);
 
     /* Écart au tracé. Un seul point aberrant ne doit pas déclencher un
@@ -667,6 +691,40 @@ function majBoutonVoix() {
 }
 
 $('btnDemarrer').addEventListener('click', () => Nav.demarrer());
+
+/* ═══ PARTAGE DE TRAJET EN DIRECT ═══
+   Un lien que n'importe qui ouvre sans installer l'application, et qui montre
+   la position bouger en temps réel pendant qu'on roule — ce que ne permettait
+   jusque-là que le point figé de l'écran Partager. */
+function majBoutonSuivi() {
+  const b = $('btnPartagerTrajet');
+  b.firstChild.textContent = Nav.suiviCode ? 'Partage actif — renvoyer le lien' : 'Partager ce trajet en direct';
+}
+
+function suiviLien(code) {
+  return location.href.replace(/[^/]*$/, '') + 'suivi.html?c=' + encodeURIComponent(code);
+}
+
+$('btnPartagerTrajet').addEventListener('click', async () => {
+  if (Nav.suiviCode) {
+    window.open(Partage.whatsapp('Je partage ma position en direct.\n' + suiviLien(Nav.suiviCode)), '_blank');
+    return;
+  }
+  if (!Nav.route || !Geo.derniere) return toast('Trace d’abord un trajet.');
+  const b = $('btnPartagerTrajet');
+  b.disabled = true;
+  try {
+    const d = await Api.suiviCreer({
+      lat: Geo.derniere.lat, lng: Geo.derniere.lng,
+      dest_lat: Nav.route.dest.lat, dest_lng: Nav.route.dest.lng, dest_nom: Nav.route.nom
+    });
+    Nav.suiviCode = d.code;
+    Nav.suiviDernierEnvoi = Date.now();
+    majBoutonSuivi();
+    window.open(Partage.whatsapp('Je partage ma position en direct.\n' + suiviLien(d.code)), '_blank');
+  } catch (e) { toast('Partage impossible — réessaie.'); }
+  b.disabled = false;
+});
 $('btnVoix').addEventListener('click', () => {
   Nav.muet = !Nav.muet;
   Store.ecrire('muet', Nav.muet);
