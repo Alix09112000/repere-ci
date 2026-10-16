@@ -363,13 +363,19 @@ async function tracerTrajet(dest, nom) {
 
 window.allerVers = (lat, lng, nom) => { map.closePopup(); allerA('scrCarte'); tracerTrajet({ lat, lng }, nom); };
 
-$('tFermer').addEventListener('click', () => {
+/* Un seul point de sortie du trajet, qu'il soit fermé depuis l'aperçu
+   (avant guidage), interrompu en cours de route, ou terminé à l'arrivée :
+   la carte doit toujours revenir à son état de départ. */
+function finirTrajet() {
   Nav.arreter();
   $('trajet').classList.remove('on');
   $('feuilleBas').style.display = 'flex';
   coucheTrajet.clearLayers();
   if (marqueurDest) { map.removeLayer(marqueurDest); marqueurDest = null; }
-});
+}
+
+$('tFermer').addEventListener('click', finirTrajet);
+$('btnFinGuidage').addEventListener('click', finirTrajet);
 
 /* ═══ GUIDAGE EN TEMPS RÉEL ═══
 
@@ -584,7 +590,7 @@ const Nav = {
     if (total < 30 || Nav.metres(pos, Nav.route.dest) < 35) {
       Nav.dire('Tu es arrivé.');
       toast('Arrivé à destination.');
-      Nav.arreter();
+      finirTrajet();
     }
   }
 };
