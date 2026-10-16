@@ -271,6 +271,7 @@
       <svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg>
     </button>
   </div>
+  <div id="tAlternatives" style="display:none;gap:8px;padding:0 16px 12px;overflow-x:auto"></div>
   <div style="padding:0 16px 14px">
     <button class="cta" id="btnDemarrer">Démarrer le guidage<i>&rarr;</i></button>
   </div>
@@ -278,6 +279,16 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div class="installBanniere" id="installBanniere">
+  <img src="logo-icon.svg" alt=""/>
+  <span class="grow">
+    <b>Installer Repère CI</b>
+    <span id="installTexte">Ouverture plus rapide, icône sur ton écran d'accueil.</span>
+  </span>
+  <button class="go" id="btnInstaller">Installer</button>
+  <button class="fermer" id="btnFermerInstall" aria-label="Fermer">&times;</button>
+</div>
 
 <div class="feuille" id="feuille">
   <div class="in">

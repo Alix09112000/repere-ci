@@ -11,7 +11,8 @@
   "background_color": "#F5F8F9",
   "theme_color": "#F5F8F9",
   "icons": [
-    { "src": "logo-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    { "src": "logo-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "logo-icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
   ],
   "categories": ["navigation", "travel", "utilities"]
 }

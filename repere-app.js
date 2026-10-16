@@ -133,6 +133,19 @@ CATEGORIES.forEach((c) => {
 document.querySelector('#scrCarte .mapwrap').appendChild(bandeFiltres);
 
 /* ═══ REPÈRES SUR LA CARTE ═══ */
+/* ═══ RÉVEIL DU SERVEUR ═══
+   Render gratuit endort le service après 15 min sans appel : la première
+   requête qui le relance peut prendre jusqu'à une minute. Sans message,
+   c'est indiscernable d'une panne. On prévient une seule fois par session,
+   seulement si ça traîne vraiment, et seulement si rien n'a encore réussi. */
+let reveilMinuteur = setTimeout(() => {
+  reveilMinuteur = null;
+  toast('Le serveur se réveille après une pause — ça peut prendre jusqu’à une minute la première fois.');
+}, 4000);
+function serveurEstReveille() {
+  if (reveilMinuteur) { clearTimeout(reveilMinuteur); reveilMinuteur = null; }
+}
+
 let chargeEnCours = null;
 async function chargerLieux() {
   const c = map.getCenter();
@@ -141,6 +154,7 @@ async function chargerLieux() {
   chargeEnCours = cle;
   try {
     const d = await Api.lieuxProches(c.lat, c.lng, rayon, S.filtre);
+    serveurEstReveille();
     if (chargeEnCours !== cle) return;   // une requête plus récente a pris la main
     coucheLieux.clearLayers();
     (d.lieux || []).forEach((l) => {
@@ -154,6 +168,15 @@ async function chargerLieux() {
   }
   majEtat();
 }
+
+/* Toucher le bandeau d'état relance le chargement quand il affiche l'échec :
+   plus besoin de rebouger la carte pour réessayer. */
+$('carteEtat').addEventListener('click', () => {
+  if (S.nbLieux !== null) return;
+  toast('Nouvelle tentative…');
+  chargerLieux();
+  chargerAlertes();
+});
 
 function popupLieu(l) {
   const nom = String(l.nom).replace(/'/g, '\u2019');
@@ -169,6 +192,7 @@ async function chargerAlertes() {
   const rayon = Math.min(6000, Math.round(map.getBounds().getNorthEast().distanceTo(c)));
   try {
     const d = await Api.alertes(c.lat, c.lng, rayon);
+    serveurEstReveille();
     S.alertes = d.signalements || [];
     coucheAlertes.clearLayers();
     S.alertes.forEach((a) => {
@@ -178,8 +202,14 @@ async function chargerAlertes() {
     });
   } catch (e) {
     S.alertes = [];
-    $('listeAlertes').innerHTML =
-      '<div class="empty">Signalements indisponibles.<br/>Vérifie ta connexion.</div>';
+    const l = $('listeAlertes');
+    l.innerHTML = '';
+    const b = document.createElement('button');
+    b.className = 'empty';
+    b.style.cssText = 'width:100%;border:0;background:none;cursor:pointer;color:inherit;font:inherit';
+    b.innerHTML = 'Signalements indisponibles.<br/><span style="text-decoration:underline">Toucher pour réessayer.</span>';
+    b.addEventListener('click', () => { chargerAlertes(); chargerStatsRoute(); });
+    l.appendChild(b);
     $('rAutour').textContent = '—';
   }
   majAlertes();
@@ -217,11 +247,13 @@ window.infirmerAlerte = async (id) => {
 /* Une seule ligne pour les deux couches. L'attribution OpenStreetMap reste à
    droite, portée par Leaflet : la licence ODbL l'exige. */
 function majEtat() {
-  const bouts = [S.nbLieux === null ? 'Repères indisponibles' : S.nbLieux + ' repères'];
+  const bouts = [S.nbLieux === null ? 'Repères indisponibles — toucher pour réessayer' : S.nbLieux + ' repères'];
   if (S.alertes.length) bouts.push(S.alertes.length + ' alerte' + (S.alertes.length > 1 ? 's' : ''));
   const el = $('carteEtat');
   el.textContent = bouts.join(' · ');
   el.style.color = S.alertes.length ? 'var(--accent)' : 'var(--ink-70)';
+  el.style.cursor = S.nbLieux === null ? 'pointer' : '';
+  el.style.textDecoration = S.nbLieux === null ? 'underline' : 'none';
 }
 
 /* L'accueil ne montre qu'une alerte : la plus proche. Le reste est dans
@@ -295,63 +327,94 @@ function direManoeuvre(pas) {
   return rue ? t + ' sur ' + rue : t;
 }
 
+/* Dessine un tracé précis (un des choix OSRM) et met à jour tout ce qui en
+   dépend : couche de la carte, résumé, étapes, et l'état de navigation. */
+function afficherRoute(route, dest, nom, enGuidage) {
+  const ligne = route.geometry.coordinates.map((c) => [c[1], c[0]]);
+
+  coucheTrajet.clearLayers();
+  L.polyline(ligne, { color: '#ffffff', weight: 10, opacity: 1 }).addTo(coucheTrajet);
+  L.polyline(ligne, { color: '#0F766E', weight: 6, opacity: 1, lineCap: 'round' }).addTo(coucheTrajet);
+  if (marqueurDest) map.removeLayer(marqueurDest);
+  marqueurDest = L.marker([dest.lat, dest.lng], { icon: carre(19, '#13232A', true) }).addTo(map);
+  if (!enGuidage) map.fitBounds(L.latLngBounds(ligne), { padding: [50, 50] });
+
+  /* Les signalements qui touchent le trajet passent avant les instructions :
+     un bouchon à trois rues de là n'intéresse personne. */
+  const surLaRoute = S.alertes.filter((a) =>
+    ligne.some((q) => Math.abs(q[0] - a.lat) < 0.0025 && Math.abs(q[1] - a.lng) < 0.0025));
+
+  $('tDest').textContent = nom;
+  const res = $('tResume');
+  res.textContent = fmt.distance(route.distance) + ' · ' + fmt.duree(route.duration) +
+    ' · arrivée ' + fmt.heure(new Date(Date.now() + route.duration * 1000)) +
+    (surLaRoute.length ? ' · ' + surLaRoute.length + ' alerte(s)' : '');
+  res.style.color = surLaRoute.length ? 'var(--accent)' : '';
+
+  const e = $('tEtapes');
+  e.innerHTML = '';
+  surLaRoute.forEach((a) => {
+    const d2 = document.createElement('div');
+    d2.className = 'etape';
+    d2.innerHTML = '<span class="n" style="color:var(--accent)">!</span>' +
+      '<span style="flex:1;min-width:0"><span class="nm">' + a.libelle + '</span>' +
+      (a.commentaire ? '<br/><span class="sub">' + a.commentaire + '</span>' : '') + '</span>';
+    e.appendChild(d2);
+  });
+  (route.legs[0].steps || []).forEach((pas) => {
+    const d2 = document.createElement('div');
+    d2.className = 'etape';
+    d2.innerHTML = '<span class="n">' + fmt.distance(pas.distance) + '</span>' +
+      '<span style="flex:1;min-width:0">' + direManoeuvre(pas) + '</span>';
+    e.appendChild(d2);
+  });
+
+  Nav.route = { ligne: ligne, etapes: route.legs[0].steps || [], dest: dest, nom: nom };
+  Nav.preparer();
+}
+
+/* Les tracés concurrents d'OSRM, affichés en chips au-dessus du bouton de
+   départ. Choisis-en un redessine la carte sans tout recalculer. */
+function afficherAlternatives(routes, dest, nom) {
+  const z = $('tAlternatives');
+  z.innerHTML = '';
+  if (routes.length < 2) { z.style.display = 'none'; return; }
+  z.style.display = 'flex';
+  routes.forEach((route, i) => {
+    const b = document.createElement('button');
+    b.className = 'chip' + (i === 0 ? ' acc' : '');
+    b.style.flex = 'none';
+    b.textContent = fmt.duree(route.duration) + ' · ' + fmt.distance(route.distance) +
+      (i === 0 ? ' · plus rapide' : '');
+    b.addEventListener('click', () => {
+      z.querySelectorAll('.chip').forEach((x) => x.classList.remove('acc'));
+      b.classList.add('acc');
+      afficherRoute(route, dest, nom, false);
+    });
+    z.appendChild(b);
+  });
+}
+
 async function tracerTrajet(dest, nom) {
   if (!Geo.derniere) {
     return localiser(() => tracerTrajet(dest, nom), (m) => toast(m));
   }
   /* Pendant le guidage, un recalcul ne doit pas rouvrir le panneau ni
-     recadrer la carte sur tout le trajet : on reste derrière le conducteur. */
+     recadrer la carte sur tout le trajet : on reste derrière le conducteur.
+     On ne propose pas non plus de choix de tracé à ce moment-là — ce n'est
+     pas le moment de comparer des options au volant. */
   const enGuidage = Nav.actif;
   const p = Geo.derniere;
   toast('Calcul du trajet…');
   try {
     const r = await fetch(OSRM + p.lng + ',' + p.lat + ';' + dest.lng + ',' + dest.lat +
-      '?overview=full&geometries=geojson&steps=true');
+      '?overview=full&geometries=geojson&steps=true&alternatives=true');
     const d = await r.json();
     if (!d.routes || !d.routes.length) throw new Error('Aucune route');
-    const route = d.routes[0];
-    const ligne = route.geometry.coordinates.map((c) => [c[1], c[0]]);
 
-    coucheTrajet.clearLayers();
-    L.polyline(ligne, { color: '#ffffff', weight: 10, opacity: 1 }).addTo(coucheTrajet);
-    L.polyline(ligne, { color: '#0F766E', weight: 6, opacity: 1, lineCap: 'round' }).addTo(coucheTrajet);
-    if (marqueurDest) map.removeLayer(marqueurDest);
-    marqueurDest = L.marker([dest.lat, dest.lng], { icon: carre(19, '#13232A', true) }).addTo(map);
-    if (!enGuidage) map.fitBounds(L.latLngBounds(ligne), { padding: [50, 50] });
-
-    /* Les signalements qui touchent le trajet passent avant les instructions :
-       un bouchon à trois rues de là n'intéresse personne. */
-    const surLaRoute = S.alertes.filter((a) =>
-      ligne.some((q) => Math.abs(q[0] - a.lat) < 0.0025 && Math.abs(q[1] - a.lng) < 0.0025));
-
-    $('tDest').textContent = nom;
-    const res = $('tResume');
-    res.textContent = fmt.distance(route.distance) + ' · ' + fmt.duree(route.duration) +
-      ' · arrivée ' + fmt.heure(new Date(Date.now() + route.duration * 1000)) +
-      (surLaRoute.length ? ' · ' + surLaRoute.length + ' alerte(s)' : '');
-    res.style.color = surLaRoute.length ? 'var(--accent)' : '';
-
-    const e = $('tEtapes');
-    e.innerHTML = '';
-    surLaRoute.forEach((a) => {
-      const d2 = document.createElement('div');
-      d2.className = 'etape';
-      d2.innerHTML = '<span class="n" style="color:var(--accent)">!</span>' +
-        '<span style="flex:1;min-width:0"><span class="nm">' + a.libelle + '</span>' +
-        (a.commentaire ? '<br/><span class="sub">' + a.commentaire + '</span>' : '') + '</span>';
-      e.appendChild(d2);
-    });
-    (route.legs[0].steps || []).forEach((pas) => {
-      const d2 = document.createElement('div');
-      d2.className = 'etape';
-      d2.innerHTML = '<span class="n">' + fmt.distance(pas.distance) + '</span>' +
-        '<span style="flex:1;min-width:0">' + direManoeuvre(pas) + '</span>';
-      e.appendChild(d2);
-    });
-
-    Nav.route = { ligne: ligne, etapes: route.legs[0].steps || [], dest: dest, nom: nom };
-    Nav.preparer();
+    afficherRoute(d.routes[0], dest, nom, enGuidage);
     if (enGuidage) return;   // le bandeau de consigne reprend la main tout seul
+    afficherAlternatives(d.routes, dest, nom);
     $('btnDemarrer').style.display = 'flex';
     $('trajet').classList.add('on');
     $('suggest').classList.remove('on');
@@ -972,6 +1035,7 @@ function majAlertes() {
 async function chargerStatsRoute() {
   try {
     const d = await Api.statsRoute();
+    serveurEstReveille();
     $('rVille').textContent = d.actifs != null ? d.actifs : '—';
     $('rJour').textContent = d.signales_24h != null ? d.signales_24h : '—';
   } catch (e) { /* sans importance : l'écran reste lisible */ }
@@ -1282,6 +1346,46 @@ $('btnEffacer').addEventListener('click', () => {
     ? 'L\u2019effacement est immédiat et complet, conformément à la loi ivoirienne sur les données personnelles.'
     : 'Sans compte, rien n\u2019est à effacer sur le serveur.');
 });
+
+/* ═══ BANNIÈRE D'INSTALLATION ═══
+   Le bandeau natif du navigateur n'apparaît qu'après des règles d'usage que
+   l'utilisateur ne voit jamais expliquées. On en montre une à nous, qui dit
+   pourquoi installer, et qui propose la bonne marche à suivre même sur
+   Safari iOS, qui ne déclenche jamais beforeinstallprompt. */
+(function () {
+  const deja_installee = window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+  if (deja_installee || Store.lire('installIgnoree', false)) return;
+
+  const banniere = $('installBanniere');
+  const fermer = () => { banniere.classList.remove('on'); Store.ecrire('installIgnoree', true); };
+  $('btnFermerInstall').addEventListener('click', fermer);
+
+  let invite = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    invite = e;
+    banniere.classList.add('on');
+  });
+  $('btnInstaller').addEventListener('click', async () => {
+    if (!invite) return fermer();
+    invite.prompt();
+    await invite.userChoice;
+    invite = null;
+    banniere.classList.remove('on');
+  });
+  window.addEventListener('appinstalled', fermer);
+
+  /* Safari iOS ne propose jamais l'installation elle-même : la seule porte
+     d'entrée est Partager → Sur l'écran d'accueil, qu'il faut expliquer. */
+  const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  if (iOS) {
+    $('installTexte').textContent =
+      'Appuie sur Partager, puis « Sur l’écran d’accueil ».';
+    $('btnInstaller').style.display = 'none';
+    setTimeout(() => banniere.classList.add('on'), 2000);
+  }
+})();
 
 /* ═══ DÉMARRAGE ═══ */
 majLieux();

@@ -7,7 +7,7 @@
    toujours venir du réseau. Seule la coque statique de repere-ci est
    concernée — pas les appels vers onrender.com. */
 
-const CACHE = 'repere-ci-coque-v1';
+const CACHE = 'repere-ci-coque-v2';
 
 const FICHIERS_COQUE = [
   './',
@@ -18,6 +18,7 @@ const FICHIERS_COQUE = [
   './repere-app.js',
   './manifest.json',
   './logo-icon.svg',
+  './logo-icon-maskable.svg',
 ];
 
 self.addEventListener('install', (evt) => {
