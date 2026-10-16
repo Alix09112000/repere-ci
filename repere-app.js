@@ -723,7 +723,11 @@ $('btnCapturer').addEventListener('click', () => {
     try {
       const [attribution, description] = await Promise.all([
         Api.geocoder({
-          telephone: (S.user && S.user.tel) || '+2250700000000',
+          /* Avec un compte, le vrai numéro distingue les foyers d'une même
+             porte. Sans compte, un identifiant propre à cet appareil évite
+             que tous les contributeurs anonymes soient confondus en une
+             seule personne par le serveur. */
+          telephone: (S.user && S.user.tel) || Store.telephoneAnonyme(),
           lat: p.lat, lng: p.lng, precision_m: p.precision
         }),
         Description.pour(p)

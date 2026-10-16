@@ -42,6 +42,21 @@ const Store = {
     let a = Store.lire('appareil', null);
     if (!a) { a = Math.random().toString(36).slice(2, 10); Store.ecrire('appareil', a); }
     return a;
+  },
+  /* Sans compte, le serveur distingue deux foyers à la même porte par leur
+     numéro : il faut donc un numéro différent par appareil, jamais le même
+     pour tout le monde. Quinze chiffres générés une fois et gardés : assez
+     pour qu'aucun appareil n'en tire deux fois le même par hasard, et
+     préfixé de zéros pour ne jamais ressembler à un vrai numéro ivoirien. */
+  telephoneAnonyme() {
+    let t = Store.lire('telAnonyme', null);
+    if (!t) {
+      const n = new Uint32Array(2);
+      crypto.getRandomValues(n);
+      t = '000' + String(n[0]).padStart(10, '0') + String(n[1] % 100).padStart(2, '0');
+      Store.ecrire('telAnonyme', t);
+    }
+    return t;
   }
 };
 
