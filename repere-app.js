@@ -89,8 +89,8 @@ const losange = (fiabilite) => L.divIcon({
 
 const map = L.map('map', { zoomControl: false, attributionControl: true })
   .setView([ABIDJAN.lat, ABIDJAN.lng], 14);
-L.tileLayer('https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-  attribution: ATTRIBUTION + ' © CARTO', maxZoom: 19
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: ATTRIBUTION, maxZoom: 19, subdomains: 'abc'
 }).addTo(map);
 map.attributionControl.setPrefix('');
 
@@ -108,7 +108,9 @@ function monterMinimap() {
     zoomControl: false, attributionControl: false, dragging: false,
     scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false
   }).setView([ABIDJAN.lat, ABIDJAN.lng], 16);
-  L.tileLayer('https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(minimap);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, subdomains: 'abc'
+  }).addTo(minimap);
 }
 
 /* ═══ FILTRES DE CATÉGORIE ═══
