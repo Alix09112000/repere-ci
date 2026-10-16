@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#F5F8F9"/>
+<meta name="description" content="Un lieu partagé avec Repère CI."/>
+<title>Un lieu — Repère CI</title>
+<link rel="icon" href="logo-icon.svg"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="repere.css"/>
+<style>
+/* Cette page est une page web, pas un écran de l'application : elle défile
+   normalement et n'a ni onglets ni inscription. */
+html,body{overflow:auto;height:auto}
+#page{max-width:560px;margin:0 auto;min-height:100vh;background:var(--bg);
+  box-shadow:0 0 0 1px var(--line);
+  display:flex;flex-direction:column}
+@media(max-width:600px){#page{border:0}}
+.url{display:flex;align-items:center;gap:11px;padding:11px 16px;background:var(--surface);
+  border-bottom:1px solid var(--line);font-size:12px;color:var(--ink-55)}
+.url svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex:none}
+.tete{padding:20px 16px 17px;display:flex;flex-direction:column;gap:11px}
+.tete h1{font-size:23px;font-weight:800;letter-spacing:-.025em;line-height:1.15;text-wrap:pretty}
+#lieuMap{height:280px;margin:0 16px;border-radius:26px;overflow:hidden;box-shadow:0 8px 24px rgba(10,40,50,.12)}
+.bas{padding:16px;display:flex;flex-direction:column;gap:11px}
+</style>
+</head>
+<body>
+<div id="page">
+
+  <div class="url">
+    <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
+    <span class="mn" id="urlAffiche">repere.ci</span>
+  </div>
+
+  <div class="tete">
+    <span class="lab acc" id="expediteur">Un lieu partagé</span>
+    <h1 id="titre">Chargement…</h1>
+    <p style="font-size:15px;line-height:1.5;color:var(--ink-70)" id="phrase"></p>
+    <div class="codebox" style="margin-top:4px">
+      <span class="lab">Repère</span>
+      <span class="val" id="code" style="font-size:22px">—</span>
+    </div>
+  </div>
+
+  <div id="lieuMap"></div>
+
+  <div class="bas">
+    <a class="cta" id="btnItineraire" href="#" target="_blank" rel="noopener">Ouvrir l'itinéraire<i>&rarr;</i></a>
+    <a class="cta out" id="btnApp" href="index.html">Obtenir mon propre repère<i>&rarr;</i></a>
+    <p class="sub" style="padding-top:6px">Repères et fond de carte : © les contributeurs OpenStreetMap, licence ODbL.</p>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="repere-api.js"></script>
+<script>
+/* Le code voyage dans l'URL et se décode côté serveur sans clé API : la route
+   /geocode/decoder est publique parce que le code porte déjà sa position. Elle
+   ne dit ni à qui il appartient, ni aucun numéro. */
+const params = new URLSearchParams(location.search);
+const code = (params.get('c') || '').trim();
+const texte = (params.get('t') || '').trim();
+
+$('urlAffiche').textContent = location.host + location.pathname.replace(/.*\//, '/') +
+  (code ? '?c=' + code : '');
+
+const carte = L.map('lieuMap', { zoomControl: true, attributionControl: true })
+  .setView([ABIDJAN.lat, ABIDJAN.lng], 13);
+L.tileLayer('https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+  attribution: ATTRIBUTION + ' © CARTO', maxZoom: 19
+}).addTo(carte);
+carte.attributionControl.setPrefix('');
+
+const marque = (taille, couleur, plein) => L.divIcon({
+  className: '', iconSize: [taille + 6, taille + 6], iconAnchor: [(taille + 6) / 2, (taille + 6) / 2],
+  html: '<div style="width:' + (taille + 6) + 'px;height:' + (taille + 6) + 'px;border-radius:50%;' +
+        'background:' + (plein ? couleur : '#fff') + ';border:3px solid ' + (plein ? '#fff' : couleur) + ';' +
+        'box-shadow:0 2px 8px rgba(10,40,50,.25)"></div>'
+});
+
+async function charger() {
+  if (!code) {
+    $('titre').textContent = 'Aucun lieu dans ce lien';
+    $('phrase').textContent = 'Le lien est incomplet. Demande à ton contact de le renvoyer.';
+    return;
+  }
+  $('code').textContent = code.toUpperCase();
+
+  try {
+    const d = await Api.decoder(code);
+    const lieu = [d.quartier, d.ville && d.ville !== d.quartier ? d.ville : null].filter(Boolean).join(', ');
+    $('titre').textContent = lieu || 'Lieu situé';
+    if (texte) $('phrase').textContent = texte;
+
+    carte.setView([d.lat, d.lng], 17);
+    L.marker([d.lat, d.lng], { icon: marque(22, '#0F766E', true) }).addTo(carte);
+
+    /* L'itinéraire s'ouvre dans l'application déjà installée sur le téléphone :
+       le destinataire n'a rien à installer pour s'y rendre. */
+    $('btnItineraire').href = 'https://www.google.com/maps/dir/?api=1&destination=' + d.lat + ',' + d.lng;
+
+    /* Les repères alentour disent au destinataire ce qu'il va voir en arrivant. */
+    try {
+      const autour = await Api.lieuxProches(d.lat, d.lng, 500);
+      (autour.lieux || []).slice(0, 6).forEach((l) => {
+        L.marker([l.lat, l.lng], { icon: marque(9, '#0F766E', false) })
+          .bindPopup('<strong>' + l.nom + '</strong><br/>' + l.libelle + ' · ' + fmt.distance(l.distance_m))
+          .addTo(carte);
+      });
+      if (!texte && autour.lieux && autour.lieux.length) {
+        const p = autour.lieux[0];
+        $('phrase').textContent = 'À ' + fmt.distance(p.distance_m) + ' de ' + p.nom + '.';
+      }
+    } catch (e) { /* la page reste utilisable sans les repères */ }
+
+    if (d.occupant) {
+      $('expediteur').textContent = 'Un lieu partagé — occupant ' + d.occupant;
+    }
+  } catch (e) {
+    $('titre').textContent = 'Repère non reconnu';
+    $('phrase').textContent = e.message || 'Ce code ne correspond à aucun lieu. Vérifie qu\u2019il a été copié en entier.';
+  }
+}
+
+charger();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
