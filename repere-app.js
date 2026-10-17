@@ -714,6 +714,7 @@ const Nav = {
   actif: false,
   muet: Store.lire('muet', false),
   veille: null,         // identifiant watchPosition
+  alerteHorsZone: false, // ne répète pas l'avertissement à chaque mesure GPS
   etape: 0,
   annonces: {},         // manœuvres déjà dites, pour ne pas se répéter
   horsRoute: 0,
@@ -807,6 +808,7 @@ const Nav = {
     Nav.etape = 0;
     Nav.annonces = {};
     Nav.horsRoute = 0;
+    Nav.alerteHorsZone = false;
     $('consigne').classList.add('on');
     // Recherche et filtres n'ont rien à faire là pendant le guidage, et la
     // bande de filtres dépassait sous le bandeau rouge.
@@ -878,8 +880,21 @@ const Nav = {
 
   avancer(pos) {
     if (!Nav.actif || !Nav.route) return;
+    // Même contrôle géographique que Geo.obtenir : watchPosition renvoie
+    // directement les coordonnées, y compris une simulation Chrome hors CI.
+    // Ne jamais déplacer la carte ou publier le suivi vers l'océan.
+    if (!Number.isFinite(pos.lat) || !Number.isFinite(pos.lng) ||
+        pos.lat < CI.latMin || pos.lat > CI.latMax ||
+        pos.lng < CI.lngMin || pos.lng > CI.lngMax) {
+      etatSignalGPS('GPS hors Côte d’Ivoire · corrige les coordonnées dans Capteurs', 'error');
+      if (!Nav.alerteHorsZone) {
+        toast('GPS hors Côte d’Ivoire : utilise une latitude et longitude d’Abidjan.');
+        Nav.alerteHorsZone = true;
+      }
+      return;
+    }
+    Nav.alerteHorsZone = false;
     // Ignorer un point trop incertain pour ne pas créer de faux virages.
-    if (!Number.isFinite(pos.lat) || !Number.isFinite(pos.lng)) return;
     if (Number.isFinite(pos.precision) && pos.precision > 80) {
       etatSignalGPS('Précision GPS faible · attente d’un meilleur signal', 'weak');
       return;
