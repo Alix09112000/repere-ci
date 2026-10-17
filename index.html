@@ -36,11 +36,50 @@
         </button>
       </div>
       <div class="suggest" id="suggest" role="region" aria-label="Résultats de recherche" aria-live="polite"></div>
-      <div class="repere-map-style-switch" role="group" aria-label="Style de la carte">
-        <button type="button" id="repereMapPlan" aria-pressed="true">Plan</button>
-        <button type="button" id="repereMapDetail" aria-pressed="false">Repères</button>
-        <button type="button" id="repereMap3D" aria-pressed="false" aria-label="Activer ou désactiver la carte 3D">3D</button>
-      </div>
+      <!-- V8 : un seul accès aux couches. Plan, affichage 3D et repères
+           sont des choix distincts. Satellite exige un fournisseur autorisé. -->
+      <button type="button" id="repereLayersToggle" class="repere-layers-trigger"
+        aria-label="Choisir les couches de la carte" aria-expanded="false"
+        aria-controls="repereLayersPanel" title="Couches de la carte">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5zm-9 9 9 5 9-5M3 16l9 5 9-5"/></svg>
+        <span>Couches</span>
+      </button>
+      <section id="repereLayersPanel" class="repere-layers-panel" role="dialog"
+        aria-label="Personnaliser les couches de la carte" hidden>
+        <div class="repere-layers-heading">
+          <div><strong>Couches de la carte</strong><p>Personnalisez votre exploration</p></div>
+          <button type="button" id="repereLayersClose" aria-label="Fermer les couches">×</button>
+        </div>
+        <div class="repere-layers-basemaps" role="group" aria-label="Fond de carte">
+          <button type="button" id="repereMapPlan" aria-pressed="true">
+            <span class="repere-layer-preview repere-layer-plan" aria-hidden="true">▦</span>
+            <span>Plan</span><small>Rues et quartiers</small>
+          </button>
+          <button type="button" id="repereMapDetail" aria-pressed="false">
+            <span class="repere-layer-preview repere-layer-detail" aria-hidden="true">⌖</span>
+            <span>Détaillé</span><small>Services et rues</small>
+          </button>
+          <div class="repere-layer-unavailable" aria-label="Satellite indisponible actuellement">
+            <span class="repere-layer-preview repere-layer-satellite" aria-hidden="true">◈</span>
+            <span>Satellite</span><small>Source à connecter</small>
+          </div>
+        </div>
+        <div class="repere-layers-options">
+          <button type="button" id="repereMap3D" class="repere-layer-setting"
+            aria-pressed="false" aria-label="Activer ou désactiver la vue 3D">
+            <span class="repere-layer-setting-icon" aria-hidden="true">▥</span>
+            <span><strong>Bâtiments 3D</strong><small>Incliner et orienter la carte</small></span>
+            <span class="repere-setting-switch" aria-hidden="true"></span>
+          </button>
+          <button type="button" id="reperePlacesToggle" class="repere-layer-setting"
+            aria-pressed="true" aria-label="Afficher ou masquer les repères locaux">
+            <span class="repere-layer-setting-icon" aria-hidden="true">⌖</span>
+            <span><strong>Repères locaux</strong><small>Commerces, services et lieux</small></span>
+            <span class="repere-setting-switch" aria-hidden="true"></span>
+          </button>
+        </div>
+        <p class="repere-layers-note">Le mode satellite sera activé après validation d’une source d’imagerie et de sa licence.</p>
+      </section>
 
       <div id="repere3dControls" class="repere-3d-controls" hidden aria-label="Commandes de la carte 3D">
         <button type="button" id="repere3dReset" aria-label="Réorienter la vue 3D" title="Réorienter">⟳</button>
@@ -80,9 +119,9 @@
     <div class="feuille-bas" id="feuilleBas" aria-label="Explorer les lieux autour de vous">
       <div class="repere-sheet-head">
         <div class="repere-sheet-heading">
-          <span class="repere-eyebrow">REPÈRE CI · DÉCOUVERTE</span>
-          <h2>Votre ville, à portée de main</h2>
-          <p>Des adresses locales, des trajets plus simples.</p>
+          <span class="repere-eyebrow">REPÈRE MAPS · EXPLORER</span>
+          <h2>Explorer les environs</h2>
+          <p>Adresses, services et itinéraires en un geste.</p>
         </div>
         <button type="button" class="repere-sheet-toggle" id="repereSheetToggle" aria-expanded="true" aria-controls="repereSheetContent" aria-label="Réduire le panneau Explorer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
@@ -98,7 +137,7 @@
         </div>
       </div>
       <div class="repere-discover" aria-label="Découvrir des lieux à proximité">
-        <div class="repere-discover-title"><strong>Où souhaitez-vous aller ?</strong><span>Choisissez une catégorie</span></div>
+        <div class="repere-discover-title"><strong>Découvrir un lieu</strong><span>Accès rapide</span></div>
         <div class="repere-quick-actions">
           <button type="button" data-repere-category="restaurant"><span aria-hidden="true">🍽️</span><b>Restaurants</b></button>
           <button type="button" data-repere-category="pharmacie"><span aria-hidden="true">✚</span><b>Pharmacies</b></button>
