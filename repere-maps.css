@@ -451,7 +451,7 @@ body,#app,.scr{background:var(--bg)}
 }
 /* Panneau plus court pour garder de la carte visible, même avec DevTools. */
 @media(max-width:719px){
-  #trajet.trajet{max-height:min(60dvh,550px);max-height:min(60vh,550px)}
+  #trajet.trajet{max-height:min(60vh,550px);max-height:min(60dvh,550px)}
   #scrCarte.repere-route-preview .cmds{
     bottom:calc(70px + env(safe-area-inset-bottom) + var(--repere-route-panel-height,350px) + 12px)
   }
