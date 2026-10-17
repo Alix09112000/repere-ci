@@ -1,0 +1,248 @@
+/* Repère Maps V8.2 — véritable composition map-first.
+   Charge après V8 pour remplacer les coordonnées de mise en page,
+   sans casser l'API, les couches, les trajets ou le GPS. */
+:root{--repere-ui-green:#087F68;--repere-ui-ink:#18372F;
+  --repere-ui-muted:#667F75;--repere-ui-line:#E5EFE9}
+/* 1. Barre de marque : affiche une véritable identité avant la recherche. */
+#scrCarte .repere-topbar{
+  position:absolute;top:calc(env(safe-area-inset-top) + 12px);
+  left:14px;right:14px;z-index:590;
+  display:flex;align-items:center;justify-content:space-between;
+  min-height:57px;gap:12px;padding:5px 7px 5px 8px;
+  border:1px solid rgba(230,241,233,.96);border-radius:19px;
+  background:rgba(255,255,255,.96);
+  box-shadow:0 9px 29px rgba(5,42,33,.12);
+  backdrop-filter:blur(15px)
+}
+#scrCarte .repere-brand{min-width:0;display:flex;align-items:center;gap:10px}
+#scrCarte .repere-brand-icon{
+  flex:none;width:42px;height:42px;display:grid;place-items:center;
+  border-radius:13px;background:linear-gradient(135deg,#087F68,#1E9D7A)
+}
+#scrCarte .repere-brand-icon img{
+  width:29px;height:29px;object-fit:contain;
+  filter:brightness(0) invert(1)
+}
+#scrCarte .repere-brand-copy{display:flex;flex-direction:column;min-width:0;gap:2px}
+#scrCarte .repere-brand-copy strong{
+  color:#18372F;font-size:17px;line-height:1.08;
+  letter-spacing:-.045em;font-weight:850;white-space:nowrap
+}
+#scrCarte .repere-brand-copy small{
+  color:#687E75;font-size:10px;font-weight:650;white-space:nowrap
+}
+#scrCarte .repere-topbar .repere-layers-trigger{
+  position:static;inset:auto;display:flex;align-items:center;gap:7px;
+  flex:none;height:43px;min-height:43px;padding:0 12px;
+  border:1px solid #DAEAE1;border-radius:13px;
+  background:#F3FAF6;box-shadow:none;
+  font-size:12px;color:#087F68
+}
+#scrCarte .repere-topbar .repere-layers-trigger svg{width:19px;height:19px}
+/* 2. Recherche sous la marque et catégories en défilement simple. */
+#scrCarte .chercher{
+  top:calc(env(safe-area-inset-top) + 79px);left:14px;right:14px;
+  height:56px;border-radius:18px;
+  border:1px solid #E1EBE6;
+  box-shadow:0 7px 24px rgba(20,59,47,.12);
+  background:rgba(255,255,255,.98);
+}
+#scrCarte .chercher .mark{
+  color:#66867A;min-width:45px;width:45px
+}
+#scrCarte .chercher .mark svg{width:22px;height:22px}
+#scrCarte .chercher input{
+  height:54px;font-size:14px;font-weight:600
+}
+#scrCarte .chercher button#btnChercher{
+  width:44px;height:44px;border-radius:13px
+}
+#scrCarte .suggest{
+  top:calc(env(safe-area-inset-top) + 141px);
+  left:14px;right:14px;z-index:675;
+  max-height:min(52dvh,460px)
+}
+#scrCarte .filtres{
+  top:calc(env(safe-area-inset-top) + 143px);
+  left:0;right:0;z-index:530;
+  display:flex;gap:8px;padding:4px 14px 11px;
+  align-items:center;scroll-snap-type:x proximity
+}
+#scrCarte .filtres .chip{
+  min-height:39px;padding:8px 14px;font-size:12px;
+  border:1px solid #E3EEE7;border-radius:100px;
+  background:rgba(255,255,255,.96);
+  box-shadow:0 3px 14px rgba(13,59,43,.09);
+  scroll-snap-align:start
+}
+#scrCarte .filtres .chip.acc{
+  background:#087F68;color:white;border-color:#087F68
+}
+/* 3. L'utilisateur voit la ville : carte et commandes libérées. */
+#scrCarte .repere-map-context{
+  position:absolute;z-index:535;left:14px;
+  bottom:calc(var(--repere-sheet-h) + 100px + env(safe-area-inset-bottom));
+  display:flex;gap:8px;align-items:center;max-width:calc(100% - 151px);
+  min-height:38px;padding:7px 11px;border-radius:100px;
+  border:1px solid rgba(223,236,228,.92);
+  box-shadow:0 5px 20px rgba(10,42,32,.15);
+  background:rgba(255,255,255,.96);color:#225247
+}
+#scrCarte .repere-map-context svg{width:16px;height:16px;flex:none;stroke:#087F68}
+#scrCarte .repere-map-context span:nth-child(2){
+  min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;font-size:11px;font-weight:800
+}
+#scrCarte .repere-map-context span:last-child{font-size:16px}
+#scrCarte .cmds{
+  right:14px;bottom:calc(var(--repere-sheet-h) + 98px + env(safe-area-inset-bottom));
+  gap:10px
+}
+#scrCarte .cmds .pos{width:50px;height:50px}
+#scrCarte .cmds .sig{min-height:48px;padding:0 13px}
+#scrCarte .cmds .sig span{font-size:12px}
+#scrCarte .etat{
+  left:14px;bottom:calc(var(--repere-sheet-h) + 146px + env(safe-area-inset-bottom));
+  font-size:10px;padding:6px 9px;
+  max-width:calc(100% - 150px)
+}
+#scrCarte #map .leaflet-bottom{
+  bottom:calc(var(--repere-sheet-h) + 90px + env(safe-area-inset-bottom))
+}
+/* 4. Carte de découverte compacte, séparée de la barre de navigation. */
+#scrCarte .feuille-bas{
+  left:12px;right:12px;bottom:calc(78px + env(safe-area-inset-bottom));
+  max-height:min(58dvh,530px);margin:0;
+  padding:14px 16px 16px;
+  border:1px solid #E0EEE5;
+  border-radius:23px;background:rgba(255,255,255,.97);
+  box-shadow:0 9px 37px rgba(9,53,37,.15);
+  backdrop-filter:blur(17px);
+}
+#scrCarte .feuille-bas::before{
+  width:37px;height:4px;margin:-6px 0 11px;background:#C4D7CC
+}
+#scrCarte .repere-sheet-head{gap:10px}
+#scrCarte .repere-sheet-heading h2{font-size:19px;font-weight:850}
+#scrCarte .repere-sheet-heading p{
+  color:var(--repere-ui-muted);font-size:12px;line-height:1.35
+}
+#scrCarte .repere-eyebrow{font-size:9px;letter-spacing:.105em}
+#scrCarte .repere-sheet-toggle{
+  width:42px;height:42px;flex:none;border-radius:13px
+}
+#scrCarte .repere-explore-shortcut{
+  display:none;gap:11px;align-items:center;width:100%;min-height:39px;
+  padding:8px 0 0;text-align:left;background:transparent;
+  color:#234D41;font-size:12px;font-weight:750
+}
+#scrCarte .repere-explore-shortcut-icon{
+  display:grid;place-items:center;flex:none;
+  width:24px;height:24px;color:#087F68
+}
+#scrCarte .repere-explore-shortcut-icon svg{width:21px;height:21px}
+#scrCarte .repere-shortcut-arrow{margin-left:auto;flex:none;width:17px;height:17px}
+#scrCarte.sheet-collapsed .repere-explore-shortcut{display:flex}
+#scrCarte.sheet-collapsed .repere-sheet-heading p{display:block}
+#scrCarte.sheet-collapsed .repere-sheet-heading h2{font-size:19px}
+#scrCarte.sheet-collapsed .repere-eyebrow{margin-bottom:4px}
+#scrCarte .repere-sheet-content{padding-top:12px;gap:14px}
+#scrCarte .repere-quick-actions button{min-height:77px}
+#scrCarte .repere-discover-title{margin-top:3px}
+#scrCarte .duo button{min-height:51px}
+#scrCarte .repere-nearby-items{max-height:150px}
+/* 5. Barre inférieure flottante, visuellement distincte de la carte. */
+#app .tabs{
+  position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 7px);
+  width:auto;transform:none;min-height:65px;z-index:700;
+  border:1px solid #E7EEE9;border-radius:22px;
+  background:rgba(255,255,255,.985);
+  box-shadow:0 9px 29px rgba(15,52,40,.17);
+  overflow:hidden;padding:0;backdrop-filter:blur(12px)
+}
+#app .tabs button{
+  min-height:65px;padding:7px 3px 8px;
+  border-radius:14px;background:transparent;
+}
+#app .tabs button.on{background:#EFF9F4}
+#app .tabs button span{font-size:10px;font-weight:750}
+#app .tabs button.on::after{width:19px;height:3px;bottom:3px}
+#app .tabs button svg{width:22px;height:22px}
+#scrCarte .repere-layers-panel{
+  top:calc(env(safe-area-inset-top) + 78px);right:14px;
+  z-index:665;max-height:min(68dvh,520px);
+}
+#scrCarte .repere-3d-controls{
+  top:calc(env(safe-area-inset-top) + 198px);
+  right:14px;z-index:548
+}
+#scrCarte.repere-route-preview .repere-topbar,
+#scrCarte.repere-guiding .repere-topbar,
+#scrCarte.repere-route-preview .repere-map-context,
+#scrCarte.repere-guiding .repere-map-context{display:none}
+#scrCarte.repere-guiding .repere-layers-panel{display:none}
+/* Les parcours possèdent leurs positions spécifiques et gardent la priorité. */
+#scrCarte.repere-route-preview .cmds{bottom:110px}
+#scrCarte.repere-route-preview #map .leaflet-bottom{bottom:8px}
+#scrCarte.repere-guiding .cmds{bottom:90px}
+#scrCarte.repere-guiding .etat{bottom:14px}
+#scrCarte.repere-guiding #map .leaflet-bottom{bottom:8px}
+#scrCarte.repere-route-preview .etat{bottom:64px}
+#scrCarte.repere-route-preview .chercher{top:calc(env(safe-area-inset-top) + 18px)}
+#scrCarte.repere-route-preview .suggest{top:calc(env(safe-area-inset-top) + 84px)}
+/* Guidage actif : marque, recherche et filtres n'empiètent plus sur l'instruction. */
+#scrCarte.repere-guiding .chercher,
+#scrCarte.repere-guiding .filtres{display:none}
+/* Desktop : large surface de carte et panneau réellement latéral. */
+@media(min-width:900px){
+  #scrCarte .repere-topbar{
+    top:20px;left:23px;right:23px;height:62px;
+    padding-left:10px;padding-right:10px
+  }
+  #scrCarte .repere-brand-copy strong{font-size:19px}
+  #scrCarte .repere-brand-copy small{font-size:11px}
+  #scrCarte .chercher{
+    top:97px;left:23px;right:auto;width:min(400px,calc(100% - 46px));
+    height:58px
+  }
+  #scrCarte .filtres{
+    top:165px;left:10px;right:10px;padding:2px 13px 10px;
+  }
+  #scrCarte .suggest{top:160px;left:23px;right:auto;width:400px}
+  #scrCarte .feuille-bas{
+    top:225px;left:23px;right:auto;bottom:auto;width:400px;
+    max-height:calc(100dvh - 325px);padding:22px 20px;
+    border-radius:24px
+  }
+  #scrCarte .feuille-bas::before{display:none}
+  #scrCarte .repere-sheet-toggle{display:none}
+  #scrCarte.sheet-collapsed .repere-explore-shortcut{display:none}
+  #scrCarte .repere-map-context{display:none}
+  #scrCarte .repere-layers-panel{top:92px;right:23px;max-height:calc(100dvh - 140px)}
+  #scrCarte .repere-3d-controls{top:163px;right:23px}
+  #scrCarte .cmds{bottom:120px;right:23px}
+  #scrCarte .etat{left:auto;right:23px;bottom:65px}
+  #scrCarte #map .leaflet-bottom{bottom:8px}
+  #scrCarte.repere-route-preview .chercher{top:97px}
+  #app .tabs{
+    bottom:16px;left:50%;right:auto;
+    transform:translateX(-50%);width:min(450px,calc(100vw - 46px));
+    min-height:65px
+  }
+}
+@media(max-width:400px){
+  #scrCarte .repere-topbar{left:10px;right:10px}
+  #scrCarte .repere-brand-copy strong{font-size:15px}
+  #scrCarte .repere-brand-copy small{font-size:9px}
+  #scrCarte .repere-topbar .repere-layers-trigger{
+    font-size:11px;padding:0 9px
+  }
+  #scrCarte .chercher{left:10px;right:10px}
+  #scrCarte .filtres{padding-left:10px}
+  #scrCarte .feuille-bas{left:10px;right:10px;padding:13px 13px 14px}
+  #scrCarte .repere-map-context{left:10px}
+  #scrCarte .repere-layers-panel{right:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  #scrCarte .repere-topbar,#scrCarte .feuille-bas{transition:none}
+}
