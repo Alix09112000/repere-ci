@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="repere.css"/>
 <link rel="stylesheet" href="repere-maps.css"/>
 <link rel="stylesheet" href="repere-v8.css"/>
+<link rel="stylesheet" href="repere-v8-2.css"/>
 </head>
 <body>
 <div id="app">
@@ -27,8 +28,25 @@
       <div id="map"></div>
       <div id="map3d" hidden aria-label="Carte 3D interactive"></div>
 
+      <header class="repere-topbar" aria-label="Repère Maps">
+        <div class="repere-brand">
+          <span class="repere-brand-icon"><img src="logo-icon.svg" alt=""/></span>
+          <span class="repere-brand-copy">
+            <strong>Repère Maps</strong>
+            <small>Explorez la Côte d’Ivoire</small>
+          </span>
+        </div>
+        <button type="button" id="repereLayersToggle" class="repere-layers-trigger"
+          aria-label="Choisir les couches de la carte" aria-expanded="false"
+          aria-controls="repereLayersPanel" title="Couches de la carte">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5zm-9 9 9 5 9-5M3 16l9 5 9-5"/></svg>
+          <span>Couches</span>
+        </button>
+      </header>
       <div class="chercher">
-        <span class="mark"><img src="logo-icon.svg" alt="Repère CI"/></span>
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.8 4.8"/></svg>
+        </span>
         <input id="qDest" placeholder="Où allez-vous ?" autocomplete="off" enterkeyhint="search"
           aria-label="Rechercher un lieu ou un GeoCode" aria-controls="suggest" aria-expanded="false"/>
         <button type="button" class="repere-search-clear" id="btnClearSearch" aria-label="Effacer la recherche" hidden>×</button>
@@ -39,12 +57,7 @@
       <div class="suggest" id="suggest" role="region" aria-label="Résultats de recherche" aria-live="polite"></div>
       <!-- V8 : un seul accès aux couches. Plan, affichage 3D et repères
            sont des choix distincts. Satellite exige un fournisseur autorisé. -->
-      <button type="button" id="repereLayersToggle" class="repere-layers-trigger"
-        aria-label="Choisir les couches de la carte" aria-expanded="false"
-        aria-controls="repereLayersPanel" title="Couches de la carte">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5zm-9 9 9 5 9-5M3 16l9 5 9-5"/></svg>
-        <span>Couches</span>
-      </button>
+
       <section id="repereLayersPanel" class="repere-layers-panel" role="dialog"
         aria-label="Personnaliser les couches de la carte" hidden>
         <div class="repere-layers-heading">
@@ -114,6 +127,12 @@
       </div>
 
       <span class="etat" id="carteEtat">Chargement…</span>
+      <button type="button" class="repere-map-context" id="repereMapContext"
+          aria-label="Explorer les lieux autour de la carte">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.8 7-12a7 7 0 0 0-14 0c0 5.2 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        <span id="repereMapContextLabel">Abidjan · Repères à proximité</span>
+        <span aria-hidden="true">›</span>
+      </button>
 
     </div>
 
@@ -122,12 +141,20 @@
         <div class="repere-sheet-heading">
           <span class="repere-eyebrow">REPÈRE MAPS · EXPLORER</span>
           <h2>Explorer les environs</h2>
-          <p>Adresses, services et itinéraires en un geste.</p>
+          <p>Découvrez les lieux autour de vous</p>
         </div>
         <button type="button" class="repere-sheet-toggle" id="repereSheetToggle" aria-expanded="true" aria-controls="repereSheetContent" aria-label="Réduire le panneau Explorer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
         </button>
       </div>
+      <button type="button" class="repere-explore-shortcut" id="repereExploreShortcut"
+         aria-label="Développer Explorer pour voir les itinéraires et les lieux enregistrés">
+        <span class="repere-explore-shortcut-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="17" r="2"/><circle cx="18" cy="7" r="2"/><path d="M8 16c3-2 3-8 8-8"/></svg>
+        </span>
+        <span>Itinéraires et lieux enregistrés</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="repere-shortcut-arrow"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
       <div class="repere-sheet-content" id="repereSheetContent">
       <div class="repere-coverage-note" id="repereCoverageNote" role="status" hidden>
         <span class="repere-coverage-icon" aria-hidden="true">📍</span>
