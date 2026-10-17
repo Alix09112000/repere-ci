@@ -35,7 +35,12 @@ const RepereRouting = (() => {
     if (!validPoint(depart) || !validPoint(arrivee)) throw Error('Coordonnées du trajet invalides.');
     const o = options(choix), costing = MODES[o.mode].costing;
     const preference = {};
-    if (o.critere === 'court') preference.shortest = true;
+    // Valhalla ignore use_highways et use_tolls avec shortest=true.
+    // S'il y a une préférence routière, garder celle-ci et choisir le
+    // plus court parmi les alternatives réellement renvoyées.
+    const contrainteAuto = o.mode === 'voiture' &&
+      (o.autoroutes !== 'normal' || o.sansPeage);
+    if (o.critere === 'court' && !contrainteAuto) preference.shortest = true;
     if (o.mode === 'voiture') {
       preference.use_highways = o.autoroutes === 'eviter' ? 0
         : o.autoroutes === 'favoriser' ? 1 : 0.5;
