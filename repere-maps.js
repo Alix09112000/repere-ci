@@ -8,6 +8,7 @@
   const search = document.getElementById('qDest');
   const searchButton = document.getElementById('btnChercher');
   const suggest = document.getElementById('suggest');
+  const clearSearch = document.getElementById('btnClearSearch');
   const guidance = document.getElementById('consigne');
   const coverageNote = document.getElementById('repereCoverageNote');
   const returnAbidjan = document.getElementById('repereReturnAbidjan');
@@ -93,14 +94,29 @@
     });
   }
 
+  // Bouton effacer toujours synchronisé avec la saisie.
+  function syncClearSearch() {
+    if (clearSearch) clearSearch.hidden = !search.value.length;
+  }
+  search.addEventListener('input', syncClearSearch);
+  if (clearSearch) clearSearch.addEventListener('click', () => {
+    search.value = '';
+    search.dispatchEvent(new Event('input', { bubbles: true }));
+    search.focus();
+    syncClearSearch();
+  });
+  syncClearSearch();
+
   search.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
-    suggest.classList.remove('on');
+    if (typeof annulerRecherche === 'function') annulerRecherche();
+    else suggest.classList.remove('on');
     search.blur();
   });
   document.addEventListener('pointerdown', (event) => {
     if (!event.target.closest('.chercher, .suggest, .repere-quick-actions')) {
-      suggest.classList.remove('on');
+      if (typeof annulerRecherche === 'function') annulerRecherche();
+    else suggest.classList.remove('on');
     }
   });
 
