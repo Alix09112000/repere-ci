@@ -125,8 +125,9 @@ choisirFondCarte(fondActif);
    plus les rues lorsque l'utilisateur explore un quartier. */
 const coucheLieux = typeof L.markerClusterGroup === 'function'
   ? L.markerClusterGroup({
-      maxClusterRadius: 48,
-      disableClusteringAtZoom: 17,
+      maxClusterRadius: zoom => zoom < 13 ? 72 : zoom < 16 ? 58 : 42,
+      disableClusteringAtZoom: 18,
+      spiderfyOnMaxZoom: true,
       showCoverageOnHover: false,
       zoomToBoundsOnClick: true,
       chunkedLoading: true,
