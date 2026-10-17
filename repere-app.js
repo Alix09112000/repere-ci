@@ -114,6 +114,7 @@ const coucheLieux = typeof L.markerClusterGroup === 'function'
     }).addTo(map)
   : L.layerGroup().addTo(map);
 const coucheAlertes = L.layerGroup().addTo(map);
+const coucheAlternatives = L.layerGroup().addTo(map);
 const coucheTrajet = L.layerGroup().addTo(map);
 let coucheParcourue = null; // Portion réellement suivie grâce aux relevés GPS.
 let marqueurMoi = null;
@@ -431,7 +432,7 @@ let minuteurOptions = null;
 function lireOptionsTrajet() {
   return RepereRouting.options({
     mode: document.querySelector('input[name="routeMode"]:checked')?.value,
-    critere: $('routeCritere').value,
+    critere: 'rapide', // classement automatique, sans sélecteur technique
     autoroutes: $('routeAutoroutes').value,
     sansPeage: $('routeSansPeage').checked
   });
@@ -441,11 +442,16 @@ function ajusterOptionsTrajet() {
   $('routeOptionsVoiture').hidden = o.mode !== 'voiture';
   const noms = { voiture:'VOITURE', velo:'VÉLO', pied:'À PIED' };
   document.querySelector('.repere-route-eyebrow').textContent = 'VOTRE ITINÉRAIRE · ' + noms[o.mode];
-  $('routeModeInfo').textContent = o.critere === 'alternatives'
-    ? 'Le plus long sera choisi uniquement parmi les trajets trouvés.'
-    : (o.autoroutes !== 'normal' && o.mode === 'voiture'
-      ? 'Les préférences routières ne garantissent pas l’exclusion totale des autoroutes.'
-      : 'Les durées sont estimées, sans trafic en temps réel.');
+  $('trajet').dataset.mode = o.mode;
+  const libelleTraces = {
+    voiture: 'Tracé routier continu — voiture',
+    velo: 'Tracé bleu segmenté — vélo',
+    pied: 'Tracé orange pointillé — à pied'
+  };
+  $('repereRouteVisualDescription').textContent = libelleTraces[o.mode];
+  $('routeModeInfo').textContent = o.autoroutes !== 'normal' && o.mode === 'voiture'
+    ? 'Itinéraire automatique. L’évitement des autoroutes reste une préférence.'
+    : 'Meilleur trajet proposé automatiquement, alternatives comparées si disponibles.';
 }
 $('repereRoutingControls').addEventListener('change', () => {
   if (Nav.actif) return; // ne jamais changer de mode pendant le guidage
@@ -537,7 +543,27 @@ function etatSignalGPS(message, quality) {
   status.dataset.quality = quality;
 }
 
-/* Dessine un tracé précis (un des choix OSRM) et met à jour tout ce qui en
+/* Profil visuel cohérent avec le mode de déplacement réellement calculé.
+   Les couleurs et pointillés ne prétendent pas mesurer le trafic. */
+const STYLES_PAR_MODE = Object.freeze({
+  voiture: Object.freeze({
+    couleur: '#087F68', epaisseur: 8, cap: 'round', dash: null,
+    parcoure: '#58756C', halo: 13, animation: true
+  }),
+  velo: Object.freeze({
+    couleur: '#1877D2', epaisseur: 7, cap: 'round', dash: '15 9',
+    parcoure: '#12518A', halo: 12, animation: false
+  }),
+  pied: Object.freeze({
+    couleur: '#F07A28', epaisseur: 7, cap: 'round', dash: '2 11',
+    parcoure: '#B45318', halo: 12, animation: false
+  })
+});
+function styleModeTrajet() {
+  return STYLES_PAR_MODE[lireOptionsTrajet().mode] || STYLES_PAR_MODE.voiture;
+}
+
+/* Dessine le tracé réel renvoyé par le moteur multimodal et met à jour tout ce qui en
    dépend : couche de la carte, résumé, étapes, et l'état de navigation. */
 function afficherRoute(route, dest, nom, enGuidage) {
   const ligne = route.geometry.coordinates.map((c) => [c[1], c[0]]);
@@ -546,16 +572,29 @@ function afficherRoute(route, dest, nom, enGuidage) {
   if (map.hasLayer(coucheLieux)) map.removeLayer(coucheLieux);
 
   coucheTrajet.clearLayers();
-  L.polyline(ligne, { color: '#fff', weight: 11, opacity: 1 }).addTo(coucheTrajet);
-  L.polyline(ligne, { color: '#087F68', weight: 7, opacity: 1, lineCap: 'round' }).addTo(coucheTrajet);
-  // Flux illustratif sur l'aperçu : ce ne sont pas des données de trafic.
+  coucheAlternatives.clearLayers();
+  const style = styleModeTrajet();
+  const mode = lireOptionsTrajet().mode;
   L.polyline(ligne, {
-    color: '#FFFFFF', weight: 2, opacity: .65, dashArray: '5 18',
-    interactive: false, className: 'repere-route-flow'
+    color: '#FFFFFF', weight: style.halo, opacity: .96, interactive: false,
+    lineCap: style.cap, lineJoin: 'round'
   }).addTo(coucheTrajet);
-  // Tant que le GPS ne fournit pas de nouvelle position, cette couche est vide.
+  L.polyline(ligne, {
+    color: style.couleur, weight: style.epaisseur, opacity: 1,
+    dashArray: style.dash || undefined, interactive: false,
+    lineCap: style.cap, lineJoin: 'round', className: 'repere-route-main repere-route-' + mode
+  }).addTo(coucheTrajet);
+  if (style.animation) {
+    // Uniquement une animation illustrative en voiture, jamais un faux GPS.
+    L.polyline(ligne, {
+      color: '#FFFFFF', weight: 2, opacity: .68, dashArray: '5 18',
+      interactive: false, className: 'repere-route-flow'
+    }).addTo(coucheTrajet);
+  }
+  // Aucune progression sans nouveau relevé GPS.
   coucheParcourue = L.polyline([], {
-    color: '#A0B4B2', weight: 7, opacity: 1, lineCap: 'round', interactive: false
+    color: style.parcoure, weight: style.epaisseur, opacity: 1,
+    lineCap: style.cap, interactive: false
   }).addTo(coucheTrajet);
   if (marqueurDest) map.removeLayer(marqueurDest);
   marqueurDest = L.marker([dest.lat, dest.lng], { icon: carre(19, '#13232A', true) }).addTo(map);
@@ -635,7 +674,8 @@ function afficherAlternatives(routes, dest, nom) {
   const minimum = Math.min(...routes.map((r) => r.duration));
   const lePlusCourt = Math.min(...routes.map((r) => r.distance));
   const lePlusLong = Math.max(...routes.map((r) => r.distance));
-  const choix = lireOptionsTrajet();
+  const baseMode = lireOptionsTrajet().mode;
+  const style = STYLES_PAR_MODE[baseMode] || STYLES_PAR_MODE.voiture;
   routes.forEach((route, i) => {
     const b = document.createElement('button');
     b.type = 'button';
@@ -643,10 +683,14 @@ function afficherAlternatives(routes, dest, nom) {
     b.setAttribute('aria-pressed', String(i === 0));
     const nomOption = document.createElement('span');
     nomOption.className = 'repere-route-option-name';
-    nomOption.textContent = 'Trajet ' + (i + 1) +
-      (choix.critere === 'alternatives' && route.distance === lePlusLong ? ' · le plus long proposé'
-        : choix.critere === 'court' && route.distance === lePlusCourt ? ' · le plus court proposé'
-        : route.duration === minimum ? ' · le plus rapide proposé' : '');
+    const pointsForts = [];
+    if (route.duration === minimum) pointsForts.push('le plus rapide proposé');
+    if (route.distance === lePlusCourt) pointsForts.push('le plus court proposé');
+    if (routes.length > 1 && route.distance === lePlusLong && lePlusLong > lePlusCourt) {
+      pointsForts.push('le plus long proposé');
+    }
+    nomOption.textContent = (i === 0 ? 'Recommandé' : 'Alternative ' + i) +
+      (pointsForts.length ? ' · ' + pointsForts.join(' · ') : '');
     const duree = document.createElement('strong');
     duree.textContent = fmt.duree(route.duration);
     const distance = document.createElement('span');
@@ -660,8 +704,29 @@ function afficherAlternatives(routes, dest, nom) {
         x.setAttribute('aria-pressed', String(selected));
       });
       afficherRoute(route, dest, nom, false);
+      // Les trajets non sélectionnés restent consultables sur la carte.
+      routes.filter((x) => x !== route).forEach((autre) => {
+        const coords = autre.geometry.coordinates.map((point) => [point[1], point[0]]);
+        if (coords.length < 2) return;
+        L.polyline(coords, {
+          color: style.couleur, weight: 4, opacity: .34,
+          dashArray: style.dash || '7 9', interactive: false,
+          className: 'repere-route-alternative'
+        }).addTo(coucheAlternatives).bringToBack();
+      });
     });
     z.appendChild(b);
+  });
+  // Dessiner les autres propositions discrètement : couleur selon le mode,
+  // toujours derrière l'itinéraire sélectionné.
+  routes.slice(1).forEach((alternative) => {
+    const coords = alternative.geometry.coordinates.map((point) => [point[1], point[0]]);
+    if (coords.length < 2) return;
+    L.polyline(coords, {
+      color: style.couleur, weight: 4, opacity: .34,
+      dashArray: style.dash || '7 9', interactive: false,
+      className: 'repere-route-alternative'
+    }).addTo(coucheAlternatives).bringToBack();
   });
 }
 
@@ -749,6 +814,7 @@ async function tracerTrajet(dest, nom) {
       $('tEtapes').replaceChildren();
       replierEtapes();
       coucheTrajet.clearLayers();
+      coucheAlternatives.clearLayers();
       coucheParcourue = null;
       if (marqueurDest) { map.removeLayer(marqueurDest); marqueurDest = null; }
       if (!map.hasLayer(coucheLieux)) coucheLieux.addTo(map);
@@ -778,6 +844,7 @@ function finirTrajet() {
   $('feuilleBas').style.display = 'flex';
   replierEtapes();
   coucheTrajet.clearLayers();
+  coucheAlternatives.clearLayers();
   coucheParcourue = null;
   if (!map.hasLayer(coucheLieux)) coucheLieux.addTo(map);
   if (marqueurDest) { map.removeLayer(marqueurDest); marqueurDest = null; }
