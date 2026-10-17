@@ -55,7 +55,7 @@ test('sélection de repères espacés dans la zone visible (simulation)',()=>{
  }));
  let events=[];
  const render=vm.runInNewContext(snippet+'\nrenderPlaces',{
-   instance,ready:true,lastPlaces:lieux,
+   instance,ready:true,placesVisible:true,lastPlaces:lieux,
    VIDE:{type:'FeatureCollection',features:[]},
    geojson:features=>({type:'FeatureCollection',features}),
    ReperePoi:{profil:()=>({couleur:'#087F68'})},

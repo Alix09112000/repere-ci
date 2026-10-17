@@ -12,7 +12,69 @@
   const guidance = document.getElementById('consigne');
   const coverageNote = document.getElementById('repereCoverageNote');
   const returnAbidjan = document.getElementById('repereReturnAbidjan');
+  const layersTrigger = document.getElementById('repereLayersToggle');
+  const layersPanel = document.getElementById('repereLayersPanel');
+  const layersClose = document.getElementById('repereLayersClose');
+  const placesToggle = document.getElementById('reperePlacesToggle');
+
   if (!root || !sheet || !toggle || !search || !searchButton || !suggest) return;
+
+  // Un seul panneau pour personnaliser la carte ; jamais d'overlay bloquant.
+  function openLayers() {
+    if (!layersTrigger || !layersPanel) return;
+    layersPanel.hidden = false;
+    layersTrigger.setAttribute('aria-expanded','true');
+    layersClose?.focus();
+  }
+  function closeLayers(restoreFocus=false) {
+    if (!layersTrigger || !layersPanel || layersPanel.hidden) return;
+    layersPanel.hidden = true;
+    layersTrigger.setAttribute('aria-expanded','false');
+    if (restoreFocus) layersTrigger.focus();
+  }
+  layersTrigger?.addEventListener('click', () => {
+    if (layersPanel.hidden) openLayers(); else closeLayers(true);
+  });
+  layersClose?.addEventListener('click', () => closeLayers(true));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && layersPanel && !layersPanel.hidden) {
+      e.preventDefault();
+      closeLayers(true);
+    }
+  });
+  document.addEventListener('pointerdown', e => {
+    if (layersPanel && !layersPanel.hidden &&
+        !layersPanel.contains(e.target) && !layersTrigger.contains(e.target)) {
+      closeLayers(false);
+    }
+  });
+  for (const id of ['repereMapPlan','repereMapDetail','repereMap3D']) {
+    document.getElementById(id)?.addEventListener('click',()=>closeLayers(false));
+  }
+
+  // Les lieux peuvent être masqués sans désactiver la recherche, les trajets,
+  // les signalements et le point GPS. Le choix est conservé sur cet appareil.
+  let placesVisible = typeof Store !== 'undefined' ?
+    Store.lire('placesVisible', true) !== false : true;
+  window.RepereLayers = { get placesVisible(){return placesVisible;} };
+  function applyPlaces() {
+    placesToggle?.setAttribute('aria-pressed',String(placesVisible));
+    if (typeof map !== 'undefined' && typeof coucheLieux !== 'undefined') {
+      const itineraire = root.classList.contains('repere-route-preview') ||
+        root.classList.contains('repere-guiding');
+      if (!placesVisible && map.hasLayer(coucheLieux)) map.removeLayer(coucheLieux);
+      if (placesVisible && !itineraire && !map.hasLayer(coucheLieux)) coucheLieux.addTo(map);
+    }
+    if (typeof Repere3D !== 'undefined' && typeof Repere3D.setPlacesVisible === 'function') {
+      Repere3D.setPlacesVisible(placesVisible);
+    }
+  }
+  placesToggle?.addEventListener('click', () => {
+    placesVisible = !placesVisible;
+    if (typeof Store !== 'undefined') Store.ecrire('placesVisible', placesVisible);
+    applyPlaces();
+  });
+  applyPlaces();
 
   function isCompact() {
     return window.matchMedia('(max-width: 899px)').matches;
@@ -122,7 +184,9 @@
 
   // Le grand panneau ne doit jamais masquer les instructions GPS.
   function refreshGuidance() {
-    root.classList.toggle('repere-guiding', !!guidance && guidance.classList.contains('on'));
+    const guiding=!!guidance && guidance.classList.contains('on');
+    root.classList.toggle('repere-guiding',guiding);
+    if (guiding) closeLayers(false);
     refreshSheetHeight();
   }
   if (guidance) new MutationObserver(refreshGuidance).observe(guidance, {
@@ -136,6 +200,8 @@
     refreshSheetHeight();
     if (typeof map !== 'undefined') map.invalidateSize();
   });
+  // La carte doit occuper l'écran au lancement sur téléphone.
+  setCollapsed(isCompact());
   refreshGuidance();
   updateCoverage();
   refreshSheetHeight();

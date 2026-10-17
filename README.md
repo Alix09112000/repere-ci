@@ -121,6 +121,33 @@ Le premier et le dernier sont les plus utiles : sans compte réel, un
 contributeur perd ses points en changeant de téléphone, ce qui vide le
 classement de son sens.
 
+## Repère Maps V8 — première phase UX/UI (sans satellite actif)
+
+**Objectif :** libérer la carte des barres et commandes concurrentes, sans réécrire
+les recherches, itinéraires, repères locaux et guidage GPS développés en V2–V7.
+
+- La carte occupe l'écran. Le panneau **Explorer les environs** démarre
+  replié sur téléphone ; l'utilisateur peut le développer immédiatement.
+- Le bouton **Couches** ouvre un panneau regroupant les fonds **Plan** et
+  **Détaillé**, ainsi que les réglages séparés **Bâtiments 3D** et
+  **Repères locaux**.
+- La visibilité des points d'intérêt est mémorisée localement et s'applique
+  aux vues Leaflet et MapLibre. Les itinéraires, alertes et positions GPS
+  continuent de fonctionner quand les repères sont masqués.
+- Le panneau de couches est utilisable au clavier, se ferme avec Échap,
+  et se replie lorsque le guidage commence.
+- Les nouveaux styles sont isolés dans `repere-v8.css`, chargé en dernier
+  pour ne pas modifier les moteurs cartographiques.
+
+**Satellite : en attente**. Le nouvel écran réserve sa place, mais aucun
+contrôle actif ni imagerie photographique n'est branché. Choisir d'abord
+un fournisseur disposant des droits et de la couverture adéquats sur Abidjan,
+puis configurer ses clés et attributions sans exposer de secret serveur.
+La source sera testée sur navigateur mobile avant activation.
+
+Les tests GitHub assurent la non-régression structurelle. Ils ne remplacent
+pas une validation visuelle du panneau sur un iPhone et un ordinateur.
+
 ## Repère Maps V7.1 — 3D vectorielle plus lisible
 
 La V7 d'origine inclinait des **tuiles d'images 2D**, produisait une

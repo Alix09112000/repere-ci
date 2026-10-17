@@ -1,0 +1,195 @@
+/* Repère Maps V8 — une carte au premier plan, panneaux contextuels.
+   Fichier surchargé en dernier pour limiter les régressions V2–V7. */
+:root{
+  --v8-green:#087F68;--v8-green-dark:#066B58;
+  --v8-text:#18362F;--v8-muted:#627A71;
+  --v8-border:#E1EDE6;--v8-panel:#FFFFFF;
+  --v8-shadow:0 12px 36px rgba(15,52,42,.13)
+}
+#scrCarte .chercher{
+  border:1px solid rgba(255,255,255,.8);border-radius:22px;
+  box-shadow:0 8px 26px rgba(12,48,38,.15);backdrop-filter:blur(15px);
+}
+#scrCarte .chercher input{font-weight:550;letter-spacing:0}
+#scrCarte .chercher button:focus-visible,
+#scrCarte .repere-layers-trigger:focus-visible,
+#scrCarte .repere-layers-panel button:focus-visible{
+  outline:3px solid var(--v8-green);outline-offset:3px;
+}
+#scrCarte .filtres{scrollbar-width:none}
+#scrCarte .filtres::-webkit-scrollbar{display:none}
+#scrCarte .filtres .chip{
+  border-radius:100px;min-height:38px;padding:8px 13px;
+  font-size:12px;box-shadow:0 3px 9px rgba(18,63,49,.06)
+}
+#scrCarte .feuille-bas{
+  border:1px solid rgba(221,236,227,.92);border-bottom:0;
+  box-shadow:0 -10px 30px rgba(10,56,42,.10);backdrop-filter:blur(20px)
+}
+#scrCarte .repere-sheet-heading h2{font-size:21px;letter-spacing:-.03em}
+#scrCarte .repere-sheet-heading p{font-size:12px}
+#scrCarte .repere-quick-actions button{
+  background:#F7FAF8;border-radius:17px;min-height:76px;box-shadow:none
+}
+#scrCarte .repere-quick-actions button.is-selected{
+  background:#EAF8F0;border-color:var(--v8-green)
+}
+#scrCarte .duo button{border-radius:16px}
+#scrCarte .repere-nearby-item{background:#F8FBF9}
+#scrCarte .tabs button{font-weight:700}
+/* Couches : bouton unique pour libérer la carte de la barre Plan/3D. */
+#scrCarte .repere-layers-trigger{
+  position:absolute;z-index:582;top:calc(env(safe-area-inset-top) + 147px);
+  right:16px;display:flex;align-items:center;gap:8px;min-height:46px;
+  padding:8px 13px;color:var(--v8-text);border:1px solid #E2EEE7;
+  border-radius:16px;background:#fff;font-size:12px;font-weight:800;
+  box-shadow:var(--v8-shadow)
+}
+#scrCarte .repere-layers-trigger svg{
+  width:20px;height:20px;fill:none;stroke:var(--v8-green);
+  stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round
+}
+#scrCarte .repere-layers-trigger[aria-expanded="true"]{
+  background:#E8F7F0;border-color:var(--v8-green)
+}
+#scrCarte .repere-layers-panel{
+  position:absolute;right:16px;top:calc(env(safe-area-inset-top) + 201px);
+  z-index:640;width:min(360px,calc(100vw - 32px));
+  max-height:calc(100dvh - 290px);overflow:auto;overscroll-behavior:contain;
+  padding:17px;border-radius:25px;background:rgba(255,255,255,.99);
+  border:1px solid #E2EEE8;box-shadow:0 18px 52px rgba(5,42,31,.22);
+}
+#scrCarte .repere-layers-panel[hidden]{display:none!important}
+#scrCarte .repere-layers-heading{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:10px;margin-bottom:16px
+}
+#scrCarte .repere-layers-heading strong{
+  font-size:17px;font-weight:850;letter-spacing:-.03em;color:var(--v8-text)
+}
+#scrCarte .repere-layers-heading p{
+  font-size:12px;color:var(--v8-muted);margin-top:3px
+}
+#scrCarte #repereLayersClose{
+  display:grid;place-items:center;flex:none;width:38px;height:38px;
+  background:#F0F6F2;color:#294C3D;font-size:26px;
+  border-radius:13px;line-height:1
+}
+#scrCarte .repere-layers-basemaps{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px
+}
+#scrCarte .repere-layers-basemaps > *{
+  display:flex;flex-direction:column;gap:5px;min-width:0;padding:6px 5px 10px;
+  border:1.5px solid #E4EBE6;border-radius:15px;background:#fff;
+  text-align:center;color:var(--v8-text);font-size:12px;font-weight:800
+}
+#scrCarte .repere-layers-basemaps button[aria-pressed="true"]{
+  border-color:var(--v8-green);background:#EBF8F1;
+  box-shadow:inset 0 0 0 1px var(--v8-green)
+}
+#scrCarte .repere-layers-basemaps small{
+  font-size:10px;color:var(--v8-muted);font-weight:600;
+  line-height:1.3;min-height:26px
+}
+#scrCarte .repere-layer-unavailable{opacity:.56;cursor:not-allowed}
+#scrCarte .repere-layer-preview{
+  display:grid;place-items:center;height:54px;border-radius:11px;
+  font-size:24px;font-weight:800;
+}
+#scrCarte .repere-layer-plan{
+  background:repeating-linear-gradient(26deg,#E4ECE6 0 9px,#F8FAF8 9px 23px);
+  color:#236951
+}
+#scrCarte .repere-layer-detail{
+  background:linear-gradient(140deg,#D7EBD9 0 37%,#F9F0DB 37% 67%,#DCECE9 67%);
+  color:#236951
+}
+#scrCarte .repere-layer-satellite{
+  background:linear-gradient(135deg,#475F4C,#89A66D 40%,#456073 75%,#284C50);
+  color:#fff
+}
+#scrCarte .repere-layers-options{
+  margin-top:16px;border-top:1px solid #E6EEE9;padding-top:8px;
+}
+#scrCarte .repere-layer-setting{
+  display:flex;align-items:center;width:100%;text-align:left;gap:10px;
+  min-height:69px;border-bottom:1px solid #EFF3F0;padding:8px 2px
+}
+#scrCarte .repere-layer-setting > span:nth-child(2){
+  min-width:0;flex:1;display:flex;flex-direction:column;gap:4px
+}
+#scrCarte .repere-layer-setting strong{
+  font-size:13px;font-weight:800;color:var(--v8-text)
+}
+#scrCarte .repere-layer-setting small{
+  font-size:11px;color:var(--v8-muted);line-height:1.3
+}
+#scrCarte .repere-layer-setting-icon{
+  width:38px;height:38px;flex:none;display:grid;place-items:center;
+  border-radius:12px;background:#EDF6F1;color:var(--v8-green);
+  font-size:22px
+}
+#scrCarte .repere-setting-switch{
+  position:relative;flex:none;width:40px;height:23px;
+  border-radius:30px;background:#CAD6CF;transition:background .15s
+}
+#scrCarte .repere-setting-switch:after{
+  content:"";position:absolute;left:3px;top:3px;width:17px;height:17px;
+  background:#fff;border-radius:50%;box-shadow:0 2px 4px #0002;transition:transform .15s
+}
+#scrCarte .repere-layer-setting[aria-pressed="true"] .repere-setting-switch{
+  background:var(--v8-green)
+}
+#scrCarte .repere-layer-setting[aria-pressed="true"] .repere-setting-switch:after{
+  transform:translateX(17px)
+}
+#scrCarte .repere-layers-note{
+  font-size:11px;color:var(--v8-muted);line-height:1.5;margin-top:12px
+}
+/* Commandes 3D accessibles sans chevaucher les couches. */
+#scrCarte .repere-3d-controls{
+  top:calc(env(safe-area-inset-top) + 202px);right:16px
+}
+#scrCarte .repere-layers-panel:not([hidden]) ~ .repere-3d-controls{display:none}
+#scrCarte.repere-guiding .repere-layers-trigger,
+#scrCarte.repere-guiding .repere-3d-controls{display:none}
+#scrCarte.repere-guiding .repere-layers-panel{display:none}
+/* La navigation est prioritaire sur tout décor superflu. */
+#trajet .repere-mode-options span{border-radius:14px}
+#trajet .repere-route-actions .cta{border-radius:16px}
+#trajet .repere-route-metrics{gap:8px}
+#trajet .repere-route-metric{background:#F7FBF8}
+#trajet .repere-route-visual-legend{margin-top:4px}
+@media(max-width:899px){
+  #scrCarte.sheet-collapsed .feuille-bas{
+    padding-top:14px;padding-bottom:12px;
+    border-radius:24px 24px 0 0
+  }
+  #scrCarte.sheet-collapsed .repere-sheet-heading p{display:none}
+  #scrCarte.sheet-collapsed .repere-sheet-heading h2{font-size:18px}
+  #scrCarte.sheet-collapsed .repere-eyebrow{margin-bottom:3px}
+  #scrCarte .repere-map-style-switch{display:none}
+}
+@media(min-width:900px){
+  #scrCarte .repere-layers-trigger{top:102px;right:24px}
+  #scrCarte .repere-layers-panel{
+    top:159px;right:24px;max-height:calc(100dvh - 215px)
+  }
+  #scrCarte .repere-3d-controls{top:165px;right:24px}
+  #scrCarte .feuille-bas{
+    border-radius:25px;border:1px solid rgba(221,236,227,.94);
+    box-shadow:0 16px 45px rgba(15,52,42,.14)
+  }
+  #scrCarte .repere-sheet-heading h2{font-size:22px}
+}
+@media(max-width:420px){
+  #scrCarte .repere-layers-trigger{right:10px;padding:8px 11px}
+  #scrCarte .repere-layers-panel{
+    right:10px;max-width:calc(100vw - 20px);
+    width:340px;top:calc(env(safe-area-inset-top) + 201px)
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #scrCarte .repere-setting-switch,
+  #scrCarte .repere-setting-switch:after{transition:none}
+}
