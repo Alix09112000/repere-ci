@@ -424,6 +424,51 @@ $('btnRecentrer').addEventListener('click', () => {
   localiser((p) => { map.setView([p.lat, p.lng], 17); }, (m) => toast(m));
 });
 
+/* ═══ TRAJET MULTIMODAL A → B ═══ */
+let derniereDestination = null;
+let controleTrajet = null;
+let minuteurOptions = null;
+function lireOptionsTrajet() {
+  return RepereRouting.options({
+    mode: document.querySelector('input[name="routeMode"]:checked')?.value,
+    critere: $('routeCritere').value,
+    autoroutes: $('routeAutoroutes').value,
+    sansPeage: $('routeSansPeage').checked
+  });
+}
+function ajusterOptionsTrajet() {
+  const o = lireOptionsTrajet();
+  $('routeOptionsVoiture').hidden = o.mode !== 'voiture';
+  const noms = { voiture:'VOITURE', velo:'VÉLO', pied:'À PIED' };
+  document.querySelector('.repere-route-eyebrow').textContent = 'VOTRE ITINÉRAIRE · ' + noms[o.mode];
+  $('routeModeInfo').textContent = o.critere === 'alternatives'
+    ? 'Le plus long sera choisi uniquement parmi les trajets trouvés.'
+    : (o.autoroutes !== 'normal' && o.mode === 'voiture'
+      ? 'Les préférences routières ne garantissent pas l’exclusion totale des autoroutes.'
+      : 'Les durées sont estimées, sans trafic en temps réel.');
+}
+$('repereRoutingControls').addEventListener('change', () => {
+  if (Nav.actif) return; // ne jamais changer de mode pendant le guidage
+  ajusterOptionsTrajet();
+  if (!derniereDestination) return;
+  // Grouper les changements successifs pour ne pas solliciter le service public.
+  clearTimeout(minuteurOptions);
+  // Invalider immédiatement la requête en cours : le délai anti-rebond
+  // ne doit pas permettre à un ancien résultat d'écraser les nouveaux critères.
+  ++sequenceTrajet;
+  if (controleTrajet) controleTrajet.abort();
+  $('btnDemarrer').disabled = true;
+  $('routeModeInfo').textContent = 'Recalcul pour les nouvelles préférences…';
+  minuteurOptions = setTimeout(() => {
+    tracerTrajet(derniereDestination.dest, derniereDestination.nom);
+  }, 450);
+});
+ajusterOptionsTrajet();
+$('btnRecalculerTrajet').addEventListener('click', () => {
+  if (Nav.actif || !derniereDestination) return;
+  tracerTrajet(derniereDestination.dest, derniereDestination.nom);
+});
+
 /* ═══ TRAJET A → B ═══
 
    Le calcul de route revient à OSRM, service public d'OpenStreetMap : il
@@ -577,7 +622,7 @@ function afficherRoute(route, dest, nom, enGuidage) {
   });
   $('btnEtapes').disabled = e.children.length === 0;
 
-  Nav.route = { ligne: ligne, etapes: etapes, dest: dest, nom: nom };
+  Nav.route = { ligne: ligne, etapes: etapes, dest: dest, nom: nom, mode: lireOptionsTrajet().mode };
   Nav.preparer();
 }
 
@@ -588,6 +633,9 @@ function afficherAlternatives(routes, dest, nom) {
   if (routes.length < 2) { z.hidden = true; return; }
   z.hidden = false;
   const minimum = Math.min(...routes.map((r) => r.duration));
+  const lePlusCourt = Math.min(...routes.map((r) => r.distance));
+  const lePlusLong = Math.max(...routes.map((r) => r.distance));
+  const choix = lireOptionsTrajet();
   routes.forEach((route, i) => {
     const b = document.createElement('button');
     b.type = 'button';
@@ -596,7 +644,9 @@ function afficherAlternatives(routes, dest, nom) {
     const nomOption = document.createElement('span');
     nomOption.className = 'repere-route-option-name';
     nomOption.textContent = 'Trajet ' + (i + 1) +
-      (route.duration === minimum ? ' · le plus rapide' : '');
+      (choix.critere === 'alternatives' && route.distance === lePlusLong ? ' · le plus long proposé'
+        : choix.critere === 'court' && route.distance === lePlusCourt ? ' · le plus court proposé'
+        : route.duration === minimum ? ' · le plus rapide proposé' : '');
     const duree = document.createElement('strong');
     duree.textContent = fmt.duree(route.duration);
     const distance = document.createElement('span');
@@ -630,6 +680,8 @@ $('btnEtapes').addEventListener('click', () => {
 
 let sequenceTrajet = 0;
 async function tracerTrajet(dest, nom) {
+  clearTimeout(minuteurOptions);
+  if (controleTrajet) controleTrajet.abort();
   if (!Geo.derniere) {
     return localiser(() => tracerTrajet(dest, nom), (m) => toast(m));
   }
@@ -649,26 +701,63 @@ async function tracerTrajet(dest, nom) {
   }
   const p = Geo.derniere;
   const demande = ++sequenceTrajet;
-  toast('Calcul du trajet…');
+  controleTrajet = new AbortController();
+  const choix = lireOptionsTrajet();
+  const bouton = $('btnDemarrer');
+  if (!enGuidage) {
+    bouton.disabled = true;
+    $('routeModeInfo').textContent = 'Calcul en cours…';
+    // Ne garder qu'une destination courante pour le recalcul après changement d'option.
+    derniereDestination = { dest: { lat: dest.lat, lng: dest.lng }, nom };
+  }
   try {
-    const r = await fetch(OSRM + p.lng + ',' + p.lat + ';' + dest.lng + ',' + dest.lat +
-      '?overview=full&geometries=geojson&steps=true&alternatives=true');
-    if (!r.ok) throw new Error('Service de routage indisponible');
-    const d = await r.json();
+    const d = await RepereRouting.calculer(p, dest, choix, controleTrajet.signal);
     if (demande !== sequenceTrajet) return;
-    if (!d.routes || !d.routes.length) throw new Error('Aucune route');
-
-    afficherRoute(d.routes[0], dest, nom, enGuidage);
-    if (enGuidage) return;
+    if (enGuidage) {
+      afficherRoute(d.routes[0], dest, nom, true);
+      return;  // pas de nouvelle feuille ni d'autres choix en roulant
+    }
+    afficherRoute(d.routes[0], dest, nom, false);
     replierEtapes();
     afficherAlternatives(d.routes, dest, nom);
+    $('routeModeInfo').textContent = [
+      choix.mode === 'voiture' ? 'Voiture' : choix.mode === 'velo' ? 'Vélo' : 'À pied',
+      d.source,
+      d.routes.length === 1 ? 'Une seule route trouvée' :
+        d.routes.length + ' trajets proposés',
+      'Pas de trafic en temps réel'
+    ].join(' · ');
     $('btnDemarrer').style.display = 'flex';
+    bouton.disabled = false;
     $('trajet').classList.add('on');
     document.getElementById('scrCarte').classList.add('repere-route-preview');
     $('suggest').classList.remove('on');
     $('feuilleBas').style.display = 'none';
   } catch (err) {
-    if (demande === sequenceTrajet) toast('Trajet impossible à calculer — réessaie.');
+    if (demande !== sequenceTrajet || controleTrajet.signal.aborted) return;
+    const message = err && err.message ? err.message : 'Calcul indisponible.';
+    if (!enGuidage) {
+      bouton.disabled = true;
+      $('routeModeInfo').textContent = 'Ce profil n’a pas pu être calculé : ' + message;
+      $('tDest').textContent = nom;
+      $('tDuree').textContent = '—';
+      $('tDistance').textContent = '—';
+      $('tArrivee').textContent = '—';
+      $('tResume').textContent = 'Aucun nouvel itinéraire confirmé.';
+      $('tAlternatives').hidden = true;
+      $('tAlternatives').replaceChildren();
+      $('tEtapes').replaceChildren();
+      replierEtapes();
+      coucheTrajet.clearLayers();
+      coucheParcourue = null;
+      if (marqueurDest) { map.removeLayer(marqueurDest); marqueurDest = null; }
+      if (!map.hasLayer(coucheLieux)) coucheLieux.addTo(map);
+      Nav.route = null;
+      $('trajet').classList.add('on');
+      document.getElementById('scrCarte').classList.add('repere-route-preview');
+      $('feuilleBas').style.display = 'none';
+    }
+    toast(message);
   }
 }
 
@@ -679,6 +768,10 @@ window.allerVers = (lat, lng, nom) => { map.closePopup(); allerA('scrCarte'); tr
    la carte doit toujours revenir à son état de départ. */
 function finirTrajet() {
   ++sequenceTrajet;
+  clearTimeout(minuteurOptions);
+  if (controleTrajet) controleTrajet.abort();
+  derniereDestination = null;
+  $('btnDemarrer').disabled = false;
   Nav.arreter();
   $('trajet').classList.remove('on');
   document.getElementById('scrCarte').classList.remove('repere-route-preview');
@@ -800,7 +893,8 @@ const Nav = {
   },
 
   demarrer() {
-    if (!Nav.route) return toast('Choisis d\u2019abord une destination.');
+    if ($('btnDemarrer').disabled) return toast('L’itinéraire n’est pas prêt.');
+    if (!Nav.route) return toast('Choisis d’abord une destination.');
     if (!('geolocation' in navigator)) return toast('Ce téléphone ne donne pas la position.');
 
     Nav.actif = true;
