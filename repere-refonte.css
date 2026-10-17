@@ -55,3 +55,18 @@
  #scrCarte .cmds .sig span{font-size:11px}
  #scrCarte .repere-map-context{font-size:10px;padding:6px 9px}
 }
+
+/* Desktop map-first: collapsible explorer and clear navigation controls */
+@media(min-width:900px){
+ #scrCarte .feuille-bas{top:225px;left:20px;width:min(350px,calc(100vw - 40px));max-height:calc(100dvh - 335px);padding:17px 16px;border-radius:20px;overflow:auto}
+ #scrCarte .repere-sheet-toggle{display:grid;place-items:center}
+ #scrCarte.sheet-collapsed .feuille-bas{height:auto;max-height:78px;min-height:0;padding:11px 16px;overflow:hidden}
+ #scrCarte.sheet-collapsed .repere-sheet-content,#scrCarte.sheet-collapsed .repere-explore-shortcut,#scrCarte.sheet-collapsed .repere-sheet-heading p,#scrCarte.sheet-collapsed .repere-eyebrow{display:none}
+ #scrCarte.sheet-collapsed .repere-sheet-heading h2{font-size:16px}
+ #scrCarte .chercher{left:20px;width:min(350px,calc(100vw - 40px))}
+ #scrCarte .suggest{left:20px;width:min(350px,calc(100vw - 40px))}
+ #scrCarte .cmds{right:24px;bottom:110px;gap:10px}
+ #scrCarte .etat{right:24px;bottom:62px}
+ #scrCarte .repere-3d-controls{right:24px}
+ #app .tabs{bottom:16px;z-index:600}
+}
