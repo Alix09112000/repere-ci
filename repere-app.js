@@ -94,7 +94,25 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 map.attributionControl.setPrefix('');
 
-const coucheLieux = L.layerGroup().addTo(map);
+/* Regroupement natif via Leaflet.markercluster, avec repli sans plugin.
+   Les lieux se séparent progressivement au zoom : 200 repères ne cachent
+   plus les rues lorsque l'utilisateur explore un quartier. */
+const coucheLieux = typeof L.markerClusterGroup === 'function'
+  ? L.markerClusterGroup({
+      maxClusterRadius: 48,
+      disableClusteringAtZoom: 17,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+      chunkedLoading: true,
+      iconCreateFunction(cluster) {
+        return L.divIcon({
+          html: '<span>' + cluster.getChildCount() + '</span>',
+          className: 'repere-cluster',
+          iconSize: L.point(42, 42)
+        });
+      }
+    }).addTo(map)
+  : L.layerGroup().addTo(map);
 const coucheAlertes = L.layerGroup().addTo(map);
 const coucheTrajet = L.layerGroup().addTo(map);
 let marqueurMoi = null;
