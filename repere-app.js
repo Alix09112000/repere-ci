@@ -496,6 +496,9 @@ function etatSignalGPS(message, quality) {
    dépend : couche de la carte, résumé, étapes, et l'état de navigation. */
 function afficherRoute(route, dest, nom, enGuidage) {
   const ligne = route.geometry.coordinates.map((c) => [c[1], c[0]]);
+  // Les grappes de repères recouvrent la polyligne : les retirer pendant
+  // l'itinéraire, puis les rétablir une fois le trajet terminé.
+  if (map.hasLayer(coucheLieux)) map.removeLayer(coucheLieux);
 
   coucheTrajet.clearLayers();
   L.polyline(ligne, { color: '#fff', weight: 11, opacity: 1 }).addTo(coucheTrajet);
@@ -683,6 +686,7 @@ function finirTrajet() {
   replierEtapes();
   coucheTrajet.clearLayers();
   coucheParcourue = null;
+  if (!map.hasLayer(coucheLieux)) coucheLieux.addTo(map);
   if (marqueurDest) { map.removeLayer(marqueurDest); marqueurDest = null; }
   if (Nav.suiviCode) {
     Api.suiviTerminer(Nav.suiviCode).catch(() => {});
@@ -874,14 +878,13 @@ const Nav = {
 
   avancer(pos) {
     if (!Nav.actif || !Nav.route) return;
-    Geo.derniere = pos;
-
     // Ignorer un point trop incertain pour ne pas créer de faux virages.
     if (!Number.isFinite(pos.lat) || !Number.isFinite(pos.lng)) return;
     if (Number.isFinite(pos.precision) && pos.precision > 80) {
       etatSignalGPS('Précision GPS faible · attente d’un meilleur signal', 'weak');
       return;
     }
+    Geo.derniere = pos;
     if (marqueurMoi) marqueurMoi.setLatLng([pos.lat, pos.lng]);
     else marqueurMoi = L.marker([pos.lat, pos.lng], { icon: carre(15, '#0F766E', true) }).addTo(map);
     if (map.getZoom() < 16) map.setView([pos.lat, pos.lng], 16, { animate: true });
