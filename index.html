@@ -320,7 +320,8 @@
       <label><input type="radio" name="routeMode" value="pied"/><span>🚶 À pied</span></label>
     </fieldset>
     <div class="repere-route-parameters">
-      <div id="routeOptionsVoiture" class="repere-road-options">
+      <details id="routeOptionsVoiture" class="repere-road-options">
+        <summary>Options de conduite (facultatif)</summary>
         <label for="routeAutoroutes">Autoroutes
           <select id="routeAutoroutes">
             <option value="normal">Sans préférence</option>
@@ -331,7 +332,7 @@
         <label class="repere-toll-option" for="routeSansPeage">
           <input id="routeSansPeage" type="checkbox"/><span>Éviter les péages si possible</span>
         </label>
-      </div>
+      </details>
     </div>
     <p id="routeModeInfo" class="repere-route-mode-info" role="status">Meilleur itinéraire sélectionné automatiquement. Les autres options apparaissent si disponibles.</p>
     <button type="button" id="btnRecalculerTrajet" class="repere-route-retry">↻ Recalculer cet itinéraire</button>
