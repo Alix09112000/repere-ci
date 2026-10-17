@@ -929,7 +929,7 @@ async function tracerTrajet(dest, nom) {
       coucheAlternatives.clearLayers();
       coucheParcourue = null;
       if (marqueurDest) { map.removeLayer(marqueurDest); marqueurDest = null; }
-      if (!map.hasLayer(coucheLieux)) coucheLieux.addTo(map);
+      if (window.RepereLayers?.placesVisible !== false && !map.hasLayer(coucheLieux)) coucheLieux.addTo(map);
       Nav.route = null;
       if (typeof Repere3D !== 'undefined') Repere3D.updateRoute(null);
       $('trajet').classList.add('on');
@@ -960,7 +960,7 @@ function finirTrajet() {
   coucheAlternatives.clearLayers();
   coucheParcourue = null;
   if (typeof Repere3D !== 'undefined') Repere3D.updateRoute(null);
-  if (!map.hasLayer(coucheLieux)) coucheLieux.addTo(map);
+  if (window.RepereLayers?.placesVisible !== false && !map.hasLayer(coucheLieux)) coucheLieux.addTo(map);
   if (marqueurDest) { map.removeLayer(marqueurDest); marqueurDest = null; }
   if (Nav.suiviCode) {
     Api.suiviTerminer(Nav.suiviCode).catch(() => {});
