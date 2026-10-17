@@ -104,7 +104,7 @@ body,#app,.scr{background:var(--bg)}
   max-width:calc(100% - 164px)
 }
 #scrCarte #map .leaflet-bottom{bottom:calc(var(--repere-sheet-h) + 6px)}
-#scrCarte .consigne{left:16px;right:16px;border-radius:22px;box-shadow:var(--sh-lg)}
+#scrCarte .consigne{z-index:575;left:16px;right:16px;border-radius:22px;box-shadow:var(--sh-lg)}
 #scrCarte.repere-guiding .feuille-bas{display:none}
 #scrCarte.repere-guiding .cmds{bottom:80px}
 #scrCarte.repere-guiding .etat{bottom:15px}
