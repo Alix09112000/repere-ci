@@ -31,7 +31,9 @@ const ReperePoi = (() => {
   }
   function profil(lieu) { return TYPES[categorie(lieu)]; }
   function valide(lieu) {
-    return lieu && Number.isFinite(Number(lieu.lat)) &&
+    if (!lieu || lieu.lat == null || lieu.lng == null ||
+        lieu.lat === '' || lieu.lng === '') return false;
+    return Number.isFinite(Number(lieu.lat)) &&
       Number.isFinite(Number(lieu.lng)) &&
       Math.abs(Number(lieu.lat)) <= 90 && Math.abs(Number(lieu.lng)) <= 180;
   }
