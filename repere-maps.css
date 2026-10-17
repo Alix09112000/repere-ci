@@ -1,90 +1,173 @@
-/* Repère Maps — couche visuelle V1, non destructive.
-   Chargée après repere.css pour préserver les comportements existants. */
-:root {
-  --bg:#F5FAF8;
-  --ink:#162D29;
-  --accent:#087F68;
-  --accent-600:#066952;
-  --accent-50:#E8F6F1;
-  --line:#DCEBE5;
-  --r-sm:14px;
-  --r:20px;
-  --r-lg:28px;
+/* Repère Maps V2 — carte immersive et expérience mobile-first.
+   La feuille historique reste chargée avant celle-ci : aucune dépendance
+   entre les autres écrans et les nouvelles règles de la carte. */
+:root{
+  --bg:#F3F8F6;--ink:#142A26;--accent:#087F68;--accent-600:#066852;
+  --accent-50:#E7F6F0;--line:#DFEAE5;--surface:#fff;
+  --r-sm:14px;--r:20px;--r-lg:28px;
   --sh-sm:0 3px 12px rgba(15,65,51,.08);
   --sh:0 10px 30px rgba(15,65,51,.13);
-  --sh-lg:0 18px 48px rgba(15,65,51,.19);
+  --sh-lg:0 18px 48px rgba(15,65,51,.18);
+  --repere-sheet-h:300px;
 }
-body{background:var(--bg)}
-#app{background:var(--bg)}
-.scr{background:var(--bg)}
-/* Recherche cartographique : grande cible tactile, focus très visible. */
-.chercher{
-  top:calc(env(safe-area-inset-top) + 14px);
-  left:16px;right:16px;height:60px;
-  border:1px solid rgba(8,127,104,.08);
-  box-shadow:0 8px 28px rgba(17,59,49,.14);
+body,#app,.scr{background:var(--bg)}
+#app{width:100%;max-width:none;height:100vh;height:100dvh;box-shadow:none}
+#scrCarte{position:relative;isolation:isolate;overflow:hidden}
+#scrCarte .mapwrap{position:absolute;inset:0;min-height:0;flex:none;overflow:hidden}
+#scrCarte #map{inset:0}
+#scrCarte .chercher{
+  z-index:550;top:calc(env(safe-area-inset-top) + 16px);
+  left:16px;right:16px;height:62px;border:1px solid rgba(8,127,104,.09);
+  border-radius:19px;box-shadow:0 8px 32px rgba(19,53,47,.16);
 }
-.chercher .mark{width:54px}
-.chercher .mark img{width:30px;height:30px}
-.chercher input{height:58px;font-weight:600;letter-spacing:-.01em}
-.chercher:focus-within{outline:3px solid rgba(8,127,104,.20);outline-offset:2px}
-.chercher button{width:46px;height:46px;margin-right:7px}
-.suggest{
-  top:calc(env(safe-area-inset-top) + 84px);
-  left:16px;right:16px;
-  border:1px solid var(--line);
+#scrCarte .chercher .mark{width:52px}
+#scrCarte .chercher .mark img{width:29px;height:29px}
+#scrCarte .chercher input{height:60px;font-size:15px;font-weight:600;letter-spacing:-.015em}
+#scrCarte .chercher:focus-within{outline:3px solid rgba(8,127,104,.18);outline-offset:2px}
+#scrCarte .chercher button{width:44px;height:44px;border-radius:14px;margin-right:8px}
+#scrCarte .suggest{
+  z-index:555;top:calc(env(safe-area-inset-top) + 87px);
+  left:16px;right:16px;max-height:min(52vh,420px);
+  border:1px solid var(--line);border-radius:20px;
 }
-.suggest button{border-radius:16px;transition:background .16s}
-.suggest button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-/* Contrôles flottants utilisables au pouce. */
-.cmds{right:16px;bottom:80px;gap:12px}
-.cmds .pos{width:54px;height:54px}
-.cmds .sig{min-height:54px}
-.feuille-bas{
-  border-radius:30px 30px 0 0;
-  padding:20px 16px 16px;
-  gap:14px;
-  box-shadow:0 -10px 32px rgba(17,59,49,.10);
+#scrCarte .suggest button{min-height:62px;border-radius:14px}
+#scrCarte .filtres{
+  z-index:510;top:calc(env(safe-area-inset-top) + 89px);
+  left:0;right:0;padding:5px 16px 14px;gap:8px;
 }
-.feuille-bas::before{
-  content:"";width:36px;height:4px;border-radius:999px;
-  background:#CFDDD8;align-self:center;margin:-9px 0 3px;
+#scrCarte .filtres .chip{
+  min-height:43px;padding:9px 15px;background:#fff;border:1px solid rgba(8,127,104,.09);
+  box-shadow:0 3px 10px rgba(15,65,51,.08);font-weight:700;
 }
-.duo button{min-height:62px;border-radius:18px}
-.duo button:focus-visible,.tabs button:focus-visible{outline-offset:-3px}
-/* Itinéraire et guidage : contraste élevé et typographie nette. */
-.consigne{left:16px;right:16px;border-radius:24px;box-shadow:var(--sh-lg)}
-.trajet{box-shadow:var(--sh-lg)}
-.tabs{border-top:1px solid var(--line);box-shadow:0 -5px 24px rgba(10,50,40,.05)}
-.tabs button{min-height:68px;transition:color .16s,background .16s}
-.tabs button.on{background:linear-gradient(180deg,rgba(8,127,104,.05),transparent)}
-.tabs button.on::after{width:22px;height:3px;margin-left:-11px;bottom:5px}
+#scrCarte .filtres .chip.acc{background:var(--accent);color:#fff;border-color:var(--accent)}
+#scrCarte .feuille-bas{
+  position:absolute;z-index:610;left:0;right:0;bottom:0;margin:0;
+  max-height:min(64vh,470px);overflow-y:auto;overscroll-behavior:contain;
+  background:rgba(255,255,255,.98);backdrop-filter:blur(14px);
+  border-radius:28px 28px 0 0;
+  box-shadow:0 -8px 36px rgba(8,45,36,.16);
+  padding:18px 18px 19px;gap:0;
+}
+#scrCarte .feuille-bas::before{
+  content:"";height:4px;width:38px;border-radius:9px;
+  background:#CADBD3;align-self:center;flex:none;margin:-9px 0 14px;
+}
+.repere-sheet-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.repere-sheet-heading{flex:1;min-width:0}
+.repere-eyebrow{display:block;color:var(--accent);font-weight:800;font-size:10px;letter-spacing:.13em;margin-bottom:4px}
+.repere-sheet-heading h2{font-size:clamp(18px,3.8vw,23px);font-weight:800;letter-spacing:-.045em;line-height:1.15}
+.repere-sheet-heading p{font-size:12px;color:var(--ink-70);margin-top:4px}
+.repere-sheet-toggle{
+  min-height:42px;min-width:42px;display:grid;place-items:center;
+  border-radius:15px;background:var(--accent-50);color:var(--accent);
+  border:1px solid #CEEDE1;
+}
+.repere-sheet-toggle svg{width:22px;height:22px;transition:transform .2s}
+.repere-sheet-content{display:flex;flex-direction:column;gap:15px;padding-top:18px}
+.repere-discover{display:flex;flex-direction:column;gap:11px}
+.repere-discover-title{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.repere-discover-title strong{font-weight:800;letter-spacing:-.02em;font-size:14px}
+.repere-discover-title span{font-size:11px;color:var(--ink-55)}
+.repere-quick-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.repere-quick-actions button{
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  gap:8px;min-width:0;min-height:79px;padding:11px 4px;border-radius:17px;
+  border:1px solid #E4EEE9;background:#F5FAF8;transition:transform .14s,background .14s;
+}
+.repere-quick-actions button span{
+  display:grid;place-items:center;width:34px;height:34px;border-radius:12px;
+  font-size:20px;background:#FEF0DE;
+}
+.repere-quick-actions button:nth-child(2) span{background:#DAF6EB}
+.repere-quick-actions button:nth-child(3) span{background:#E4F1FF}
+.repere-quick-actions button:nth-child(4) span{background:#EEE7FC}
+.repere-quick-actions button b{font-size:11px;font-weight:800;line-height:1.1;white-space:nowrap}
+.repere-quick-actions button:active{transform:scale(.97)}
+.repere-quick-actions button.is-selected{
+  border-color:var(--accent);background:#E7F6F0;box-shadow:inset 0 0 0 1px var(--accent)
+}
+#scrCarte .duo{gap:9px}
+#scrCarte .duo button{min-height:58px;border-radius:16px;box-shadow:none}
+#scrCarte .duo button b{font-size:13px}
+#scrCarte .duo .p{background:var(--accent);color:#fff}
+#scrCarte #alertePlusProche:empty{display:none}
+#scrCarte #alertePlusProche:not(:empty){padding-top:3px}
+#scrCarte.sheet-collapsed .repere-sheet-content{display:none}
+#scrCarte.sheet-collapsed .repere-sheet-toggle svg{transform:rotate(180deg)}
+#scrCarte .cmds{right:15px;bottom:calc(var(--repere-sheet-h) + 18px);gap:10px}
+#scrCarte .cmds .pos{width:54px;height:54px;box-shadow:var(--sh)}
+#scrCarte .cmds .sig{min-height:53px;padding:0 17px}
+#scrCarte .etat{
+  left:16px;bottom:calc(var(--repere-sheet-h) + 18px);
+  padding:8px 12px;background:rgba(255,255,255,.97);
+  border:1px solid #E7F0EC;border-radius:13px;box-shadow:var(--sh-sm);
+  max-width:calc(100% - 164px)
+}
+#scrCarte #map .leaflet-bottom{bottom:calc(var(--repere-sheet-h) + 6px)}
+#scrCarte .consigne{left:16px;right:16px;border-radius:22px;box-shadow:var(--sh-lg)}
+#scrCarte.repere-guiding .feuille-bas{display:none}
+#scrCarte.repere-guiding .cmds{bottom:80px}
+#scrCarte.repere-guiding .etat{bottom:15px}
+#scrCarte.repere-guiding #map .leaflet-bottom{bottom:8px}
+.tabs{z-index:700;border-top:1px solid var(--line);box-shadow:0 -5px 20px rgba(15,65,51,.07)}
+.tabs button{min-height:66px;transition:color .16s,background .16s}
+.tabs button.on{color:var(--accent);background:linear-gradient(180deg,rgba(8,127,104,.06),transparent)}
+.tabs button.on::after{width:22px;height:3px;margin-left:-11px;bottom:6px}
 .fld:focus{box-shadow:0 0 0 4px rgba(8,127,104,.12)}
 .cta{box-shadow:0 6px 14px rgba(8,127,104,.13)}
 .cta:disabled{box-shadow:none}
-.feuille .in{border-radius:30px 30px 0 0}
-/* Respect des systèmes d'accessibilité. */
+.feuille .in{border-radius:28px 28px 0 0}
+:where(.repere-sheet-toggle,.repere-quick-actions button,.tabs button):focus-visible{
+  outline:3px solid var(--accent);outline-offset:2px
+}
+/* Regroupement des repères à faible zoom (plugin Leaflet markercluster). */
+.repere-cluster{background:transparent!important;border:0!important}
+.repere-cluster span{
+  display:grid;place-items:center;width:42px;height:42px;border:3px solid #fff;
+  border-radius:50%;background:var(--accent);color:#fff;font-weight:800;font-size:13px;
+  box-shadow:0 3px 14px rgba(2,67,51,.34),0 0 0 5px rgba(8,127,104,.15)
+}
+@media(min-width:900px){
+  #scrCarte .chercher{
+    left:26px;right:auto;top:24px;width:392px;height:64px;border-radius:19px
+  }
+  #scrCarte .suggest{left:26px;right:auto;top:100px;width:392px}
+  #scrCarte .filtres{left:438px;right:90px;top:28px;padding:2px 10px 12px}
+  #scrCarte .feuille-bas{
+    left:26px;right:auto;top:112px;bottom:auto;width:392px;
+    max-height:calc(100% - 212px);border-radius:25px;
+    padding:23px 22px 20px;box-shadow:0 12px 46px rgba(8,45,36,.2)
+  }
+  #scrCarte .feuille-bas::before{display:none}
+  #scrCarte .repere-sheet-toggle{display:none}
+  #scrCarte.sheet-collapsed .repere-sheet-content{display:flex}
+  #scrCarte .repere-sheet-content{gap:19px;padding-top:24px}
+  #scrCarte .repere-quick-actions button{min-height:90px}
+  #scrCarte .cmds{right:25px;bottom:116px}
+  #scrCarte .etat{left:auto;right:25px;bottom:62px;max-width:230px}
+  #scrCarte #map .leaflet-bottom{bottom:8px}
+  #scrCarte .consigne{left:auto;right:25px;top:95px;width:min(410px,calc(100% - 460px))}
+  #scrCarte .filtres .chip{min-height:46px}
+  #scrCarte.repere-guiding .cmds{bottom:116px}
+  #scrCarte.repere-guiding .etat{bottom:62px}
+  .tabs{
+    position:absolute;left:50%;bottom:16px;transform:translateX(-50%);
+    width:min(440px,calc(100% - 42px));border:1px solid var(--line);
+    border-radius:23px;overflow:hidden;background:#fff;
+    box-shadow:0 12px 38px rgba(8,45,36,.18);padding-bottom:0
+  }
+  .tabs button{min-height:64px;padding:8px 3px}
+  .scr:not(#scrCarte){width:min(100%,680px);margin:0 auto;padding-bottom:84px;min-height:0}
+}
+@media(max-width:380px){
+  #scrCarte .feuille-bas{padding:15px 12px}
+  #scrCarte .repere-quick-actions{gap:5px}
+  #scrCarte .repere-quick-actions button b{font-size:9px}
+  #scrCarte .repere-discover-title span{display:none}
+  #scrCarte .duo button{padding:0 9px;gap:6px}
+  #scrCarte .duo button b{font-size:12px}
+  #scrCarte .chercher,#scrCarte .suggest{left:10px;right:10px}
+}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
 }
-@media(max-width:360px){
-  .duo button{padding:0 10px;gap:7px}
-  .duo button b{font-size:13px}
-  .chercher{left:10px;right:10px}
-  .suggest{left:10px;right:10px}
-  .feuille-bas{padding-left:12px;padding-right:12px}
-}
-
-
-/* Repère Maps V1 — découverte rapide */
-.repere-discover{display:flex;flex-direction:column;gap:10px}
-.repere-discover-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.repere-discover-title strong{font-size:15px;letter-spacing:-.025em}
-.repere-discover-title span{font-size:12px;color:var(--ink-55)}
-.repere-quick-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
-.repere-quick-actions button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:68px;padding:9px 3px;border:1px solid var(--line);border-radius:16px;background:#F7FBF9}
-.repere-quick-actions button span{font-size:22px;line-height:1.1}
-.repere-quick-actions button b{font-size:10px;line-height:1.2;font-weight:700;white-space:nowrap}
-.repere-quick-actions button:active{background:var(--accent-50);transform:scale(.98)}
-.repere-quick-actions button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-@media(max-width:350px){.repere-quick-actions{gap:4px}.repere-quick-actions button b{font-size:9px}}
