@@ -121,6 +121,38 @@ Le premier et le dernier sont les plus utiles : sans compte réel, un
 contributeur perd ses points en changeant de téléphone, ce qui vide le
 classement de son sens.
 
+## Repère Maps V7 — mode 3D facultatif
+
+Le bouton **3D** ouvre MapLibre GL JS en WebGL, avec une vue inclinée
+et orientable. La carte principale Leaflet **2D reste fonctionnelle** et
+est restaurée immédiatement via Plan ou Repères. Les parcours voiture,
+vélo et marche et les points de repère peuvent être visualisés dans la
+vue 3D, sans remplacer les fonctions actuelles de guidage GPS.
+
+Les volumes correspondent aux **empreintes de bâtiments réellement
+cartographiées dans OpenStreetMap**. Quand les attributs `height` ou
+`building:levels` n'existent pas, les hauteurs sont **estimées uniquement
+pour la visualisation** (3 m par étage connu, sinon 7 m), jamais
+présentées comme des mesures de bâtiment. Il ne s'agit **ni de
+photographies aériennes ni d'une imagerie satellite 3D**, ni d'un modèle
+de terrain photogrammétrique. Des quartiers peuvent manquer de données.
+
+La bibliothèque MapLibre est chargée uniquement lors du premier clic sur
+3D. Les bâtiments sont interrogés **uniquement en 3D** et seulement à
+partir du zoom 15, dans une emprise volontairement limitée autour du
+centre de la carte (~400 m). Le centre demandé est transmis à l'API
+Overpass publique ; les réponses sont limitées à 180 bâtiments, le
+chargement est espacé d'au moins 45 secondes, et un délai de 13 secondes
+arrête les requêtes trop longues. Aucune requête massive, aucun
+téléchargement hors connexion. En cas d'indisponibilité des données ou
+de WebGL, le plan 2D demeure disponible.
+
+**Important avant lancement commercial** : OpenStreetMap et Overpass
+sont des services communautaires sans garantie de disponibilité. Le
+fond de carte respecte l'attribution OSM et les règles de cache des
+tuiles. Pour une audience importante, utiliser un fournisseur de tuiles
+et de bâtiments adapté, ou héberger les données via un backend dédié.
+
 ## Carte enrichie et repères locaux — V6
 
 - **Plan** : fond OpenStreetMap standard, adapté aux rues et itinéraires.
