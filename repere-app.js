@@ -89,10 +89,36 @@ const losange = (fiabilite) => L.divIcon({
 
 const map = L.map('map', { zoomControl: false, attributionControl: true })
   .setView([ABIDJAN.lat, ABIDJAN.lng], 14);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: ATTRIBUTION, maxZoom: 19, subdomains: 'abc'
-}).addTo(map);
+/* Les deux vues utilisent des données OSM réelles : la vue Repères
+   privilégie les écoles, points de soin et autres lieux utiles.
+   Elle ne prétend pas être une imagerie satellite. */
+const fondPlan = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: ATTRIBUTION, maxZoom: 19
+});
+const fondDetails = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · style <a href="https://www.hotosm.org/">HOT</a> · hébergement OSM France',
+  maxZoom: 19, subdomains: 'abc'
+});
+const fondsCarte = { plan: fondPlan, details: fondDetails };
+let fondActif = Store.lire('fondCarte', 'plan') === 'details' ? 'details' : 'plan';
+fondsCarte[fondActif].addTo(map);
 map.attributionControl.setPrefix('');
+
+function choisirFondCarte(type) {
+  if (!(type in fondsCarte)) return;
+  if (type !== fondActif) {
+    map.removeLayer(fondsCarte[fondActif]);
+    fondActif = type;
+    fondsCarte[type].addTo(map);
+    fondsCarte[type].bringToBack();
+    Store.ecrire('fondCarte', type);
+  }
+  $('repereMapPlan').setAttribute('aria-pressed', String(type === 'plan'));
+  $('repereMapDetail').setAttribute('aria-pressed', String(type === 'details'));
+}
+$('repereMapPlan').addEventListener('click', () => choisirFondCarte('plan'));
+$('repereMapDetail').addEventListener('click', () => choisirFondCarte('details'));
+choisirFondCarte(fondActif);
 
 /* Regroupement natif via Leaflet.markercluster, avec repli sans plugin.
    Les lieux se séparent progressivement au zoom : 200 repères ne cachent
@@ -128,8 +154,8 @@ function monterMinimap() {
     zoomControl: false, attributionControl: false, dragging: false,
     scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false
   }).setView([ABIDJAN.lat, ABIDJAN.lng], 16);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19, subdomains: 'abc'
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
   }).addTo(minimap);
 }
 
@@ -175,6 +201,64 @@ function carteDansCI() {
   return c.lat >= CI.latMin && c.lat <= CI.latMax &&
          c.lng >= CI.lngMin && c.lng <= CI.lngMax;
 }
+/* Marqueurs nommés, lisibles au zoom rapproché. Aucun nom API n'entre
+   dans du HTML : les libellés sont toujours ajoutés par textContent. */
+function iconeLieu(lieu) {
+  const p = ReperePoi.profil(lieu);
+  return L.divIcon({
+    className: 'repere-marker-icon', iconSize: [36, 42],
+    iconAnchor: [18, 40], popupAnchor: [0, -34], tooltipAnchor: [0, -35],
+    html: '<span class="repere-place-marker" style="--poi-color:' + p.couleur + '">' +
+          '<span class="repere-place-marker-inner">' + p.icone + '</span></span>'
+  });
+}
+function listeRepereAutour(lieux, message) {
+  const boite = $('repereNearbyItems'), nombre = $('repereNearbyCount');
+  boite.replaceChildren();
+  if (message || !Array.isArray(lieux) || lieux.length === 0) {
+    nombre.textContent = lieux && lieux.length === 0 ? '0 repère' : '—';
+    const info = document.createElement('span');
+    info.className = 'repere-nearby-empty';
+    info.textContent = message || 'Aucun lieu référencé autour du centre de la carte.';
+    boite.appendChild(info);
+    return;
+  }
+  const centre = map.getCenter();
+  const proches = ReperePoi.selectionner(lieux,
+    l => map.distance(centre, L.latLng(Number(l.lat), Number(l.lng))), 5);
+  nombre.textContent = lieux.length + ' trouvé' + (lieux.length > 1 ? 's' : '');
+  for (const entree of proches) {
+    const l = entree.lieu, p = ReperePoi.profil(l);
+    const bouton = document.createElement('button');
+    bouton.type = 'button';
+    bouton.className = 'repere-nearby-item';
+    bouton.setAttribute('aria-label', 'Afficher le lieu ' + String(l.nom || p.nom));
+    const icone = document.createElement('span');
+    icone.className = 'repere-nearby-icon';
+    icone.style.setProperty('--poi-color', p.couleur);
+    icone.textContent = p.icone;
+    icone.setAttribute('aria-hidden', 'true');
+    const bloc = document.createElement('span');
+    bloc.className = 'repere-nearby-text';
+    const titre = document.createElement('strong');
+    titre.textContent = String(l.nom || p.nom);
+    const sous = document.createElement('small');
+    sous.textContent = p.nom + ' · ' + fmt.distance(entree.distance) + ' du centre';
+    bloc.append(titre, sous);
+    const fleche = document.createElement('span');
+    fleche.textContent = '›';
+    fleche.className = 'repere-nearby-arrow';
+    fleche.setAttribute('aria-hidden', 'true');
+    bouton.append(icone, bloc, fleche);
+    bouton.addEventListener('click', () => {
+      allerA('scrCarte');
+      map.setView([Number(l.lat), Number(l.lng)], 17, { animate: true });
+      ouvrirFicheLieu(l);
+    });
+    boite.appendChild(bouton);
+  }
+}
+
 async function chargerLieux() {
   const c = map.getCenter();
   const rayon = Math.min(3000, Math.round(map.getBounds().getNorthEast().distanceTo(c)));
@@ -182,6 +266,7 @@ async function chargerLieux() {
   chargeEnCours = cle;
   if (!carteDansCI()) {
     coucheLieux.clearLayers();
+    listeRepereAutour([], 'Les lieux référencés sont actuellement disponibles en Côte d’Ivoire.');
     S.nbLieux = 0;
     majEtat();
     return;
@@ -191,14 +276,33 @@ async function chargerLieux() {
     serveurEstReveille();
     if (chargeEnCours !== cle) return;   // une requête plus récente a pris la main
     coucheLieux.clearLayers();
-    (d.lieux || []).forEach((l) => {
-      L.marker([l.lat, l.lng], { icon: carre(9, '#0F766E', false) })
-        .bindPopup(popupLieu(l))
-        .addTo(coucheLieux);
+    const lieux = (d.lieux || []).filter(ReperePoi.valide);
+    const centre = map.getCenter();
+    const classement = ReperePoi.selectionner(lieux,
+      l => map.distance(centre, L.latLng(Number(l.lat), Number(l.lng))), 200);
+    const etiquetes = ReperePoi.etiquettes(classement,
+      l => map.latLngToContainerPoint([Number(l.lat), Number(l.lng)]),
+      map.getZoom(), 9);
+    lieux.forEach((l) => {
+      const marqueur = L.marker([Number(l.lat), Number(l.lng)], {
+        icon: iconeLieu(l), title: String(l.nom || 'Repère local'), keyboard: true
+      }).bindPopup(popupLieu(l));
+      if (l.nom) {
+        const texte = document.createElement('span');
+        texte.textContent = String(l.nom);
+        marqueur.bindTooltip(texte, {
+          permanent: etiquetes.has(l), direction: 'top',
+          className: 'repere-place-label', opacity: 1, offset: [0, -4]
+        });
+      }
+      marqueur.addTo(coucheLieux);
     });
-    S.nbLieux = (d.lieux || []).length;
+    listeRepereAutour(lieux);
+    S.nbLieux = lieux.length;
   } catch (e) {
+    if (chargeEnCours !== cle) return;
     S.nbLieux = null;
+    listeRepereAutour(null, 'Impossible de charger les lieux. Vérifiez la connexion ou réessayez.');
   }
   majEtat();
 }

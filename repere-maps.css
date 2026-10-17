@@ -629,3 +629,98 @@ body,#app,.scr{background:var(--bg)}
   #trajet .repere-route-visual-legend {padding-left:12px;padding-right:12px}
   #trajet .repere-route-auto-pill{margin-left:0}
 }
+
+
+/* V6 — fonds et marquage des lieux. Les noms sont ceux de la base Repère CI,
+   la carte détaillée présente le rendu Humanitarian OpenStreetMap. */
+#map .leaflet-tile-pane{filter:none!important}
+#scrCarte .repere-map-style-switch {
+  position:absolute;z-index:545;right:16px;
+  top:calc(env(safe-area-inset-top) + 147px);
+  display:flex;gap:4px;align-items:center;padding:5px;
+  border-radius:17px;background:rgba(255,255,255,.98);
+  box-shadow:0 6px 20px rgba(6,57,44,.19);
+  border:1px solid rgba(10,68,51,.10)
+}
+#scrCarte .repere-map-style-switch button {
+  min-height:38px;padding:7px 13px;border-radius:12px;border:0;
+  font-size:12px;font-weight:800;color:#557168;background:transparent
+}
+#scrCarte .repere-map-style-switch button[aria-pressed="true"] {
+  color:#fff;background:#087F68
+}
+#scrCarte .repere-map-style-switch button:focus-visible{
+  outline:3px solid #087F68;outline-offset:2px
+}
+#scrCarte.repere-guiding .repere-map-style-switch{display:none}
+.repere-marker-icon{background:none;border:0}
+.repere-place-marker{
+  position:relative;display:grid;place-items:center;width:34px;height:34px;
+  font-size:16px;font-weight:900;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.1);
+  background:var(--poi-color,#087F68);border:2px solid #fff;
+  border-radius:15px 15px 15px 4px;transform:rotate(-45deg);
+  box-shadow:0 4px 14px rgba(11,50,42,.26)
+}
+/* Contenu de l'icône : redressement de l'emoji via un filtre SVG/rotation
+   appliquée à l'élément interne lors de l'ajout du marqueur. */
+.repere-place-marker-inner{display:block;transform:rotate(45deg);line-height:1}
+#map .leaflet-tooltip.repere-place-label{
+  border:1px solid #D6E6E0;border-radius:10px;padding:5px 9px;
+  color:#193D32;background:#fff;box-shadow:0 4px 15px rgba(10,50,40,.15);
+  font-size:11px;font-weight:800;line-height:1.25;white-space:nowrap;
+  max-width:190px;text-overflow:ellipsis;overflow:hidden
+}
+#map .leaflet-tooltip.repere-place-label::before{border-top-color:#fff}
+#scrCarte .repere-nearby{
+  display:flex;flex-direction:column;gap:8px;
+  padding-top:12px;border-top:1px solid #E5EFEA
+}
+#scrCarte .repere-nearby-head{
+  display:flex;gap:8px;align-items:center;justify-content:space-between
+}
+#scrCarte .repere-nearby-head strong{
+  font-size:14px;letter-spacing:-.02em;font-weight:800;color:#193D32
+}
+#scrCarte .repere-nearby-head span{
+  font-size:11px;color:#678078;white-space:nowrap
+}
+#scrCarte .repere-nearby>p{font-size:11px;line-height:1.4;color:#698178}
+#scrCarte .repere-nearby-items{
+  display:flex;flex-direction:column;gap:4px;
+  overflow-y:auto;max-height:182px;overscroll-behavior:contain
+}
+#scrCarte .repere-nearby-item{
+  display:flex;align-items:center;gap:10px;min-height:54px;
+  border-radius:13px;padding:8px 10px;background:#F3F9F5;
+  border:1px solid #E7F1EB;text-align:left;cursor:pointer
+}
+#scrCarte .repere-nearby-item:hover{background:#E6F5ED}
+#scrCarte .repere-nearby-item:focus-visible{
+  outline:3px solid #087F68;outline-offset:-3px
+}
+#scrCarte .repere-nearby-icon{
+  width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
+  color:#fff;background:var(--poi-color,#087F68);
+  font-size:16px;font-weight:800;flex:none
+}
+#scrCarte .repere-nearby-text{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+#scrCarte .repere-nearby-text strong{
+  display:block;font-size:12px;font-weight:800;color:#1E4236;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+#scrCarte .repere-nearby-text small{
+  font-size:11px;color:#6F837B;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis
+}
+#scrCarte .repere-nearby-arrow{font-size:21px;color:#779789}
+#scrCarte .repere-nearby-empty{font-size:12px;color:#70857B;padding:12px}
+@media(min-width:900px){
+  #scrCarte .repere-map-style-switch{right:24px;top:105px}
+}
+@media(max-width:420px){
+  #scrCarte .repere-map-style-switch{
+    top:calc(env(safe-area-inset-top) + 145px);right:10px
+  }
+  #scrCarte .repere-map-style-switch button{font-size:11px;padding:7px 9px}
+  #scrCarte .repere-nearby-items{max-height:138px}
+}

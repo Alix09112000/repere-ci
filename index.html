@@ -35,6 +35,10 @@
         </button>
       </div>
       <div class="suggest" id="suggest" role="region" aria-label="Résultats de recherche" aria-live="polite"></div>
+      <div class="repere-map-style-switch" role="group" aria-label="Style de la carte">
+        <button type="button" id="repereMapPlan" aria-pressed="true">Plan</button>
+        <button type="button" id="repereMapDetail" aria-pressed="false">Repères</button>
+      </div>
 
       <div class="cmds">
         <button class="pos" id="btnRecentrer" aria-label="Ma position">
@@ -104,6 +108,16 @@
           <b>Mes lieux</b>
         </button>
       </div>
+      <section class="repere-nearby" aria-label="Lieux référencés autour de la carte">
+        <div class="repere-nearby-head">
+          <strong>Repères autour de la carte</strong>
+          <span id="repereNearbyCount">Recherche…</span>
+        </div>
+        <p>Commerces et lieux référencés à proximité du centre de la carte.</p>
+        <div id="repereNearbyItems" class="repere-nearby-items" aria-live="polite">
+          <span class="repere-nearby-empty">Chargement des repères…</span>
+        </div>
+      </section>
       <div id="alertePlusProche"></div>
       </div>
     </div>
@@ -389,6 +403,7 @@
 <script src="repere-api.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="repere-routing.js"></script>
+<script src="repere-poi.js"></script>
 <script src="repere-app.js"></script>
 <script src="repere-maps.js"></script>
 <script>

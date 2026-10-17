@@ -2,7 +2,7 @@
    Objectif : afficher les mises à jour dès qu'une connexion est disponible,
    et conserver un secours hors ligne pour les seuls fichiers statiques.
    Ni les appels API ni les données personnelles ne sont stockés ici. */
-const CACHE = 'repere-ci-coque-v14';
+const CACHE = 'repere-ci-coque-v15';
 const PREFIXE_CACHE = 'repere-ci-coque-';
 const FICHIERS_COQUE = [
   './',
@@ -13,6 +13,7 @@ const FICHIERS_COQUE = [
   './repere-maps.css',
   './repere-api.js',
   './repere-routing.js',
+  './repere-poi.js',
   './repere-app.js',
   './repere-maps.js',
   './manifest.json',

@@ -121,9 +121,20 @@ Le premier et le dernier sont les plus utiles : sans compte réel, un
 contributeur perd ses points en changeant de téléphone, ce qui vide le
 classement de son sens.
 
+## Carte enrichie et repères locaux — V6
+
+- **Plan** : fond OpenStreetMap standard, adapté aux rues et itinéraires.
+- **Repères** : rendu humanitaire HOT/OSM France, qui met davantage en avant les équipements et lieux utiles déjà cartographiés dans OSM.
+- **Marqueurs communautaires** : les données de points d'intérêt viennent de l'API Repère CI / GeoDeliver. Les icônes varient selon la catégorie. À partir du zoom 17, un nombre limité de noms s'affiche pour éviter les chevauchements.
+- **Liste des repères** : une courte sélection des lieux connus près du centre de la carte, en conservant les commandes de partage en accès rapide.
+
+Ces vues ne sont pas de l'imagerie satellite : une couche satellite nécessite **un fournisseur de données avec licence et droits d'usage adaptés**. Ne copiez pas les images Google Maps ou d'un autre service sans autorisation.
+
+**Conditions d'utilisation des fonds :** le service de tuiles OSM France est réservé à un usage public, non lucratif et modéré, avec attribution. Avant toute commercialisation ou forte audience, migrer vers un fournisseur sous contrat, ou auto-héberger un rendu autorisé (https://www.openstreetmap.fr/usage/).
+
 ## Attribution — obligatoire
 
-Les repères et le fond de carte viennent d'OpenStreetMap, sous licence **ODbL**.
+Les données cartographiques de fond sont issues d'OpenStreetMap, sous licence **ODbL**. Les repères communautaires sont fournis séparément par Repère CI / GeoDeliver.
 La mention **« © les contributeurs OpenStreetMap »** figure sur la carte, sur la
 page d'un lieu partagé et dans le profil. Ne la retirez pas : c'est la
 condition d'usage.

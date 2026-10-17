@@ -4,6 +4,7 @@ on:
     paths:
       - 'repere-routing.js'
       - 'repere-app.js'
+      - 'repere-poi.js'
       - 'tests/**'
       - '.github/workflows/routing-tests.yml'
   push:
@@ -27,5 +28,6 @@ jobs:
         run: |
           node --check repere-routing.js
           node --check repere-app.js
+          node --check repere-poi.js
       - name: Exécuter les tests de routage
         run: node --test tests/*.test.cjs
