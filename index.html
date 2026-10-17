@@ -293,26 +293,41 @@
   </nav>
 </div>
 
-<!-- Panneau de trajet, posé sur la carte -->
-<div class="trajet" id="trajet">
+<!-- Panneau d'itinéraire V4 : résumé clair, comparaison et étapes sur demande. -->
+<section class="trajet" id="trajet" role="region" aria-label="Prévisualisation d'itinéraire">
+  <div class="repere-route-grip" aria-hidden="true"></div>
   <div class="tete">
-    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
-      <span class="nm" id="tDest">—</span>
-      <span class="sub" id="tResume">—</span>
+    <div class="repere-route-heading">
+      <span class="repere-route-eyebrow">VOTRE ITINÉRAIRE · VOITURE</span>
+      <div class="repere-route-path">
+        <span class="repere-route-start" aria-hidden="true"></span>
+        <span class="repere-route-origin">Ma position</span>
+        <span class="repere-route-arrow" aria-hidden="true">↓</span>
+        <span class="repere-route-end" aria-hidden="true"></span>
+        <strong class="nm" id="tDest">—</strong>
+      </div>
     </div>
-    <button class="ico" id="tFermer" aria-label="Fermer">
+    <button class="ico" id="tFermer" aria-label="Fermer l'itinéraire">
       <svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg>
     </button>
   </div>
-  <div id="tAlternatives" style="display:none;gap:8px;padding:0 16px 12px;overflow-x:auto"></div>
-  <div style="padding:0 16px 10px">
-    <button class="cta out" id="btnPartagerTrajet">Partager ce trajet en direct<i>&rarr;</i></button>
+  <div class="repere-route-metrics" aria-label="Résumé de l'itinéraire">
+    <div class="repere-route-metric"><strong id="tDuree">—</strong><span>Durée estimée</span></div>
+    <div class="repere-route-metric"><strong id="tDistance">—</strong><span>Distance</span></div>
+    <div class="repere-route-metric"><strong id="tArrivee">—</strong><span>Arrivée estimée</span></div>
   </div>
-  <div style="padding:0 16px 14px">
-    <button class="cta" id="btnDemarrer">Démarrer le guidage<i>&rarr;</i></button>
+  <p class="repere-route-hint" id="tResume">Estimations sans trafic en temps réel.</p>
+  <div class="repere-route-alternatives" id="tAlternatives" role="group" aria-label="Itinéraires alternatifs" hidden></div>
+  <div class="repere-route-actions">
+    <button class="cta" id="btnDemarrer"><span>Démarrer le guidage</span><i aria-hidden="true">➜</i></button>
+    <button class="cta out" id="btnPartagerTrajet"><span>Partager ce trajet en direct</span><i aria-hidden="true">↗</i></button>
   </div>
-  <div class="etapes" id="tEtapes"></div>
-</div>
+  <button type="button" class="repere-route-steps-toggle" id="btnEtapes" aria-expanded="false" aria-controls="tEtapes">
+    <span>Voir les étapes de l'itinéraire</span><span aria-hidden="true" class="repere-steps-chevron">⌄</span>
+  </button>
+  <div class="etapes" id="tEtapes" hidden></div>
+  <p class="repere-route-safety">Pour votre sécurité, préparez votre itinéraire à l’arrêt.</p>
+</section>
 
 <div class="toast" id="toast"></div>
 
