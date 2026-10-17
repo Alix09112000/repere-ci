@@ -312,6 +312,36 @@
       <svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg>
     </button>
   </div>
+  <div class="repere-mode-picker" id="repereRoutingControls" aria-label="Options de trajet">
+    <fieldset class="repere-mode-options">
+      <legend>Mode de déplacement</legend>
+      <label><input type="radio" name="routeMode" value="voiture" checked/><span>🚗 Voiture</span></label>
+      <label><input type="radio" name="routeMode" value="velo"/><span>🚲 Vélo</span></label>
+      <label><input type="radio" name="routeMode" value="pied"/><span>🚶 À pied</span></label>
+    </fieldset>
+    <div class="repere-route-parameters">
+      <label for="routeCritere">Choix du trajet
+        <select id="routeCritere">
+          <option value="rapide">Le plus rapide disponible</option>
+          <option value="court">Le plus court disponible</option>
+          <option value="alternatives">Le plus long parmi les options</option>
+        </select>
+      </label>
+      <div id="routeOptionsVoiture" class="repere-road-options">
+        <label for="routeAutoroutes">Autoroutes
+          <select id="routeAutoroutes">
+            <option value="normal">Sans préférence</option>
+            <option value="eviter">Éviter si possible</option>
+            <option value="favoriser">Privilégier si possible</option>
+          </select>
+        </label>
+        <label class="repere-toll-option" for="routeSansPeage">
+          <input id="routeSansPeage" type="checkbox"/><span>Éviter les péages si possible</span>
+        </label>
+      </div>
+    </div>
+    <p id="routeModeInfo" class="repere-route-mode-info" role="status">Les durées sont estimées, sans trafic en temps réel.</p>
+  </div>
   <div class="repere-route-metrics" aria-label="Résumé de l'itinéraire">
     <div class="repere-route-metric"><strong id="tDuree">—</strong><span>Durée estimée</span></div>
     <div class="repere-route-metric"><strong id="tDistance">—</strong><span>Distance</span></div>
@@ -358,6 +388,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="repere-api.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="repere-routing.js"></script>
 <script src="repere-app.js"></script>
 <script src="repere-maps.js"></script>
 <script>
