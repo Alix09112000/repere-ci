@@ -1,0 +1,90 @@
+/* Repère Maps — couche visuelle V1, non destructive.
+   Chargée après repere.css pour préserver les comportements existants. */
+:root {
+  --bg:#F5FAF8;
+  --ink:#162D29;
+  --accent:#087F68;
+  --accent-600:#066952;
+  --accent-50:#E8F6F1;
+  --line:#DCEBE5;
+  --r-sm:14px;
+  --r:20px;
+  --r-lg:28px;
+  --sh-sm:0 3px 12px rgba(15,65,51,.08);
+  --sh:0 10px 30px rgba(15,65,51,.13);
+  --sh-lg:0 18px 48px rgba(15,65,51,.19);
+}
+body{background:var(--bg)}
+#app{background:var(--bg)}
+.scr{background:var(--bg)}
+/* Recherche cartographique : grande cible tactile, focus très visible. */
+.chercher{
+  top:calc(env(safe-area-inset-top) + 14px);
+  left:16px;right:16px;height:60px;
+  border:1px solid rgba(8,127,104,.08);
+  box-shadow:0 8px 28px rgba(17,59,49,.14);
+}
+.chercher .mark{width:54px}
+.chercher .mark img{width:30px;height:30px}
+.chercher input{height:58px;font-weight:600;letter-spacing:-.01em}
+.chercher:focus-within{outline:3px solid rgba(8,127,104,.20);outline-offset:2px}
+.chercher button{width:46px;height:46px;margin-right:7px}
+.suggest{
+  top:calc(env(safe-area-inset-top) + 84px);
+  left:16px;right:16px;
+  border:1px solid var(--line);
+}
+.suggest button{border-radius:16px;transition:background .16s}
+.suggest button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+/* Contrôles flottants utilisables au pouce. */
+.cmds{right:16px;bottom:80px;gap:12px}
+.cmds .pos{width:54px;height:54px}
+.cmds .sig{min-height:54px}
+.feuille-bas{
+  border-radius:30px 30px 0 0;
+  padding:20px 16px 16px;
+  gap:14px;
+  box-shadow:0 -10px 32px rgba(17,59,49,.10);
+}
+.feuille-bas::before{
+  content:"";width:36px;height:4px;border-radius:999px;
+  background:#CFDDD8;align-self:center;margin:-9px 0 3px;
+}
+.duo button{min-height:62px;border-radius:18px}
+.duo button:focus-visible,.tabs button:focus-visible{outline-offset:-3px}
+/* Itinéraire et guidage : contraste élevé et typographie nette. */
+.consigne{left:16px;right:16px;border-radius:24px;box-shadow:var(--sh-lg)}
+.trajet{box-shadow:var(--sh-lg)}
+.tabs{border-top:1px solid var(--line);box-shadow:0 -5px 24px rgba(10,50,40,.05)}
+.tabs button{min-height:68px;transition:color .16s,background .16s}
+.tabs button.on{background:linear-gradient(180deg,rgba(8,127,104,.05),transparent)}
+.tabs button.on::after{width:22px;height:3px;margin-left:-11px;bottom:5px}
+.fld:focus{box-shadow:0 0 0 4px rgba(8,127,104,.12)}
+.cta{box-shadow:0 6px 14px rgba(8,127,104,.13)}
+.cta:disabled{box-shadow:none}
+.feuille .in{border-radius:30px 30px 0 0}
+/* Respect des systèmes d'accessibilité. */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+@media(max-width:360px){
+  .duo button{padding:0 10px;gap:7px}
+  .duo button b{font-size:13px}
+  .chercher{left:10px;right:10px}
+  .suggest{left:10px;right:10px}
+  .feuille-bas{padding-left:12px;padding-right:12px}
+}
+
+
+/* Repère Maps V1 — découverte rapide */
+.repere-discover{display:flex;flex-direction:column;gap:10px}
+.repere-discover-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.repere-discover-title strong{font-size:15px;letter-spacing:-.025em}
+.repere-discover-title span{font-size:12px;color:var(--ink-55)}
+.repere-quick-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.repere-quick-actions button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:68px;padding:9px 3px;border:1px solid var(--line);border-radius:16px;background:#F7FBF9}
+.repere-quick-actions button span{font-size:22px;line-height:1.1}
+.repere-quick-actions button b{font-size:10px;line-height:1.2;font-weight:700;white-space:nowrap}
+.repere-quick-actions button:active{background:var(--accent-50);transform:scale(.98)}
+.repere-quick-actions button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media(max-width:350px){.repere-quick-actions{gap:4px}.repere-quick-actions button b{font-size:9px}}

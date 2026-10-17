@@ -14,6 +14,7 @@
 <title>Repère CI</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="repere.css"/>
+<link rel="stylesheet" href="repere-maps.css"/>
 </head>
 <body>
 <div id="app">
@@ -61,6 +62,15 @@
     </div>
 
     <div class="feuille-bas" id="feuilleBas">
+      <div class="repere-discover" aria-label="Découvrir des lieux à proximité">
+        <div class="repere-discover-title"><strong>Explorer autour de moi</strong><span>Accès rapide</span></div>
+        <div class="repere-quick-actions">
+          <button type="button" data-repere-search="restaurant"><span aria-hidden="true">🍽️</span><b>Restaurants</b></button>
+          <button type="button" data-repere-search="pharmacie"><span aria-hidden="true">✚</span><b>Pharmacies</b></button>
+          <button type="button" data-repere-search="station-service"><span aria-hidden="true">⛽</span><b>Essence</b></button>
+          <button type="button" data-repere-search="banque"><span aria-hidden="true">🏦</span><b>Banques</b></button>
+        </div>
+      </div>
       <div class="duo">
         <button class="p" id="btnAllerPartager">
           <svg viewBox="0 0 24 24"><path d="M4 12v8h16v-8"/><path d="M12 3v11M8 7l4-4 4 4"/></svg>
@@ -309,6 +319,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="repere-api.js"></script>
 <script src="repere-app.js"></script>
+<script src="repere-maps.js"></script>
 <script>
   // Coque hors-ligne / installation sur l'écran d'accueil. N'importe jamais
   // les réponses de l'API — voir sw.js.
