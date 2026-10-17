@@ -740,6 +740,19 @@ async function tracerTrajet(dest, nom) {
       bouton.disabled = true;
       $('routeModeInfo').textContent = 'Ce profil n’a pas pu être calculé : ' + message;
       $('tDest').textContent = nom;
+      $('tDuree').textContent = '—';
+      $('tDistance').textContent = '—';
+      $('tArrivee').textContent = '—';
+      $('tResume').textContent = 'Aucun nouvel itinéraire confirmé.';
+      $('tAlternatives').hidden = true;
+      $('tAlternatives').replaceChildren();
+      $('tEtapes').replaceChildren();
+      replierEtapes();
+      coucheTrajet.clearLayers();
+      coucheParcourue = null;
+      if (marqueurDest) { map.removeLayer(marqueurDest); marqueurDest = null; }
+      if (!map.hasLayer(coucheLieux)) coucheLieux.addTo(map);
+      Nav.route = null;
       $('trajet').classList.add('on');
       document.getElementById('scrCarte').classList.add('repere-route-preview');
       $('feuilleBas').style.display = 'none';
