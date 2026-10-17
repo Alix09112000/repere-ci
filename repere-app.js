@@ -92,8 +92,9 @@ const map = L.map('map', { zoomControl: false, attributionControl: true })
 /* Les deux vues utilisent des données OSM réelles : la vue Repères
    privilégie les écoles, points de soin et autres lieux utiles.
    Elle ne prétend pas être une imagerie satellite. */
-const fondPlan = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: ATTRIBUTION, maxZoom: 19
+const fondPlan = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · © <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains: 'abcd', maxZoom: 20, maxNativeZoom: 19
 });
 const fondDetails = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
   attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · style <a href="https://www.hotosm.org/">HOT</a> · hébergement OSM France',
