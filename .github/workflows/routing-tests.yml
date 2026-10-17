@@ -6,7 +6,6 @@ on:
       - 'repere-app.js'
       - 'repere-poi.js'
       - 'repere-3d.js'
-      - 'repere-3d-data.js'
       - 'tests/**'
       - '.github/workflows/routing-tests.yml'
   push:
@@ -31,7 +30,6 @@ jobs:
           node --check repere-routing.js
           node --check repere-app.js
           node --check repere-poi.js
-          node --check repere-3d-data.js
           node --check repere-3d.js
       - name: Exécuter les tests de routage
         run: node --test tests/*.test.cjs
