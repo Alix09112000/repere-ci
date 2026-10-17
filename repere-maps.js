@@ -184,7 +184,9 @@
 
   // Le grand panneau ne doit jamais masquer les instructions GPS.
   function refreshGuidance() {
-    root.classList.toggle('repere-guiding', !!guidance && guidance.classList.contains('on'));
+    const guiding=!!guidance && guidance.classList.contains('on');
+    root.classList.toggle('repere-guiding',guiding);
+    if (guiding) closeLayers(false);
     refreshSheetHeight();
   }
   if (guidance) new MutationObserver(refreshGuidance).observe(guidance, {
