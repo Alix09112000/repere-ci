@@ -453,6 +453,10 @@ $('repereRoutingControls').addEventListener('change', () => {
   if (!derniereDestination) return;
   // Grouper les changements successifs pour ne pas solliciter le service public.
   clearTimeout(minuteurOptions);
+  // Invalider immédiatement la requête en cours : le délai anti-rebond
+  // ne doit pas permettre à un ancien résultat d'écraser les nouveaux critères.
+  ++sequenceTrajet;
+  if (controleTrajet) controleTrajet.abort();
   $('btnDemarrer').disabled = true;
   $('routeModeInfo').textContent = 'Recalcul pour les nouvelles préférences…';
   minuteurOptions = setTimeout(() => {
@@ -460,6 +464,10 @@ $('repereRoutingControls').addEventListener('change', () => {
   }, 450);
 });
 ajusterOptionsTrajet();
+$('btnRecalculerTrajet').addEventListener('click', () => {
+  if (Nav.actif || !derniereDestination) return;
+  tracerTrajet(derniereDestination.dest, derniereDestination.nom);
+});
 
 /* ═══ TRAJET A → B ═══
 
@@ -730,7 +738,11 @@ async function tracerTrajet(dest, nom) {
     const message = err && err.message ? err.message : 'Calcul indisponible.';
     if (!enGuidage) {
       bouton.disabled = true;
-      $('routeModeInfo').textContent = 'Ce profil n’a pas pu être calculé. Modifiez les préférences ou réessayez.';
+      $('routeModeInfo').textContent = 'Ce profil n’a pas pu être calculé : ' + message;
+      $('tDest').textContent = nom;
+      $('trajet').classList.add('on');
+      document.getElementById('scrCarte').classList.add('repere-route-preview');
+      $('feuilleBas').style.display = 'none';
     }
     toast(message);
   }
