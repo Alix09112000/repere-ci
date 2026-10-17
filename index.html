@@ -13,6 +13,7 @@
 <link rel="icon" href="logo-icon.svg"/>
 <title>Repère CI</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
 <link rel="stylesheet" href="repere.css"/>
 <link rel="stylesheet" href="repere-maps.css"/>
 </head>
@@ -61,14 +62,25 @@
 
     </div>
 
-    <div class="feuille-bas" id="feuilleBas">
+    <div class="feuille-bas" id="feuilleBas" aria-label="Explorer les lieux autour de vous">
+      <div class="repere-sheet-head">
+        <div class="repere-sheet-heading">
+          <span class="repere-eyebrow">REPÈRE CI · DÉCOUVERTE</span>
+          <h2>Votre ville, à portée de main</h2>
+          <p>Des adresses locales, des trajets plus simples.</p>
+        </div>
+        <button type="button" class="repere-sheet-toggle" id="repereSheetToggle" aria-expanded="true" aria-controls="repereSheetContent" aria-label="Réduire le panneau Explorer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
+        </button>
+      </div>
+      <div class="repere-sheet-content" id="repereSheetContent">
       <div class="repere-discover" aria-label="Découvrir des lieux à proximité">
-        <div class="repere-discover-title"><strong>Explorer autour de moi</strong><span>Accès rapide</span></div>
+        <div class="repere-discover-title"><strong>Où souhaitez-vous aller ?</strong><span>Choisissez une catégorie</span></div>
         <div class="repere-quick-actions">
-          <button type="button" data-repere-search="restaurant"><span aria-hidden="true">🍽️</span><b>Restaurants</b></button>
-          <button type="button" data-repere-search="pharmacie"><span aria-hidden="true">✚</span><b>Pharmacies</b></button>
-          <button type="button" data-repere-search="station-service"><span aria-hidden="true">⛽</span><b>Essence</b></button>
-          <button type="button" data-repere-search="banque"><span aria-hidden="true">🏦</span><b>Banques</b></button>
+          <button type="button" data-repere-category="restaurant"><span aria-hidden="true">🍽️</span><b>Restaurants</b></button>
+          <button type="button" data-repere-category="pharmacie"><span aria-hidden="true">✚</span><b>Pharmacies</b></button>
+          <button type="button" data-repere-category="station"><span aria-hidden="true">⛽</span><b>Essence</b></button>
+          <button type="button" data-repere-category="banque"><span aria-hidden="true">🏦</span><b>Banques</b></button>
         </div>
       </div>
       <div class="duo">
@@ -82,6 +94,7 @@
         </button>
       </div>
       <div id="alertePlusProche"></div>
+      </div>
     </div>
   </section>
 
@@ -318,6 +331,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="repere-api.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="repere-app.js"></script>
 <script src="repere-maps.js"></script>
 <script>
