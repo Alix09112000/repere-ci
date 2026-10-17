@@ -171,3 +171,30 @@ body,#app,.scr{background:var(--bg)}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
 }
+
+
+/* Zone couverte : préciser la limite des données sans cacher la carte OSM. */
+.repere-coverage-note{
+  display:flex;gap:11px;align-items:flex-start;border-radius:17px;
+  border:1px solid #BCE9D8;background:#EFFAF5;padding:14px;
+}
+.repere-coverage-note[hidden]{display:none!important}
+.repere-coverage-icon{
+  width:34px;height:34px;border-radius:11px;background:#DCF4E9;
+  display:grid;place-items:center;flex:none;font-size:20px;
+}
+.repere-coverage-copy{display:flex;flex-direction:column;gap:7px;min-width:0}
+.repere-coverage-copy strong{font-size:13px;font-weight:800;line-height:1.3}
+.repere-coverage-copy p{font-size:12px;line-height:1.5;color:var(--ink-70)}
+.repere-coverage-copy button{
+  align-self:flex-start;display:flex;align-items:center;gap:8px;
+  padding:9px 12px;border:0;border-radius:11px;background:var(--accent);
+  color:white;font-size:12px;font-weight:800;min-height:39px;
+}
+.repere-coverage-copy button:hover{background:var(--accent-600)}
+.repere-coverage-copy button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+#scrCarte .etat{overflow:hidden;text-overflow:ellipsis}
+@media(min-width:900px){
+  #scrCarte .feuille-bas{max-height:calc(100% - 185px)}
+  #scrCarte .etat{max-width:340px}
+}
