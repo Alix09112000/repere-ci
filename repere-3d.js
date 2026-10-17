@@ -244,6 +244,14 @@ const Repere3D = (() => {
           canvasContextAttributes:{antialias:true},
           attributionControl:true
         });
+        // Missing sprite images are non-fatal: use a transparent placeholder
+        // so the vector style does not flood the console with missing-image warnings.
+        instance.on('styleimagemissing', event => {
+          const id=event.id;
+          if(!id || instance.hasImage(id))return;
+          const size=2;
+          instance.addImage(id,{width:size,height:size,data:new Uint8Array(size*size*4)});
+        });
         instance.on('load',()=>{
           addLayers();
           status('Carte vectorielle prête · relief selon les hauteurs disponibles dans OSM.');
