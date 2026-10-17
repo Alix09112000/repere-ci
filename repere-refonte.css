@@ -39,3 +39,19 @@
  #scrCarte .repere-topbar .repere-layers-trigger span{display:none}
  #scrCarte .repere-map-context span:nth-child(2){max-width:145px}
 }
+
+/* V9 : repères lisibles et feuille compacte — iPhone */
+#map .repere-cluster{background:transparent;border:0}
+#map .repere-cluster span{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#087f68;color:white;font-size:12px;font-weight:800;border:3px solid #fff;box-shadow:0 3px 12px #123e3240}
+#map .repere-place-marker{width:29px;height:29px;font-size:13px}
+@media(max-width:899px){
+ #scrCarte.sheet-collapsed .feuille-bas{padding:9px 14px 10px;max-height:82px;overflow:hidden}
+ #scrCarte.sheet-collapsed .repere-eyebrow,#scrCarte.sheet-collapsed .repere-explore-shortcut,#scrCarte.sheet-collapsed .repere-sheet-heading p{display:none}
+ #scrCarte.sheet-collapsed .repere-sheet-head{min-height:49px;align-items:center}
+ #scrCarte.sheet-collapsed .repere-sheet-heading h2{font-size:16px}
+ #scrCarte .repere-map-context{bottom:calc(var(--repere-sheet-h) + 94px + env(safe-area-inset-bottom));max-width:calc(100% - 90px)}
+ #scrCarte .cmds{bottom:calc(var(--repere-sheet-h) + 97px + env(safe-area-inset-bottom));align-items:flex-end}
+ #scrCarte .cmds .sig{font-size:11px;padding:0 10px;min-height:40px}
+ #scrCarte .cmds .sig span{font-size:11px}
+ #scrCarte .repere-map-context{font-size:10px;padding:6px 9px}
+}
