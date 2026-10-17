@@ -12,7 +12,6 @@ const Repere3D = (() => {
   let cachedBuildings = VIDE, centerBuildings = null, timestampBuildings = 0;
   let controller = null, timer = null, syncingFrom3D = false;
   let lastPlaces = [], lastRoute = null, lastPosition = null;
-  const keyLayers = ['repere-3d-buildings','repere-3d-route-outline','repere-3d-route','repere-3d-places','repere-3d-gps'];
   function status(message) { const e = el('repere3dStatus'); if(e)e.textContent=message; }
   function pressed(state) {
     el('repereMap3D')?.setAttribute('aria-pressed',String(state));
@@ -158,13 +157,14 @@ const Repere3D = (() => {
     if(Date.now()-timestampBuildings<45000)return;
     timestampBuildings=Date.now();
     if(controller)controller.abort();
-    controller=new AbortController();
+    const request=new AbortController();
+    controller=request;
     status('Chargement des bâtiments cartographiés…');
     try {
       const q=Repere3DData.requete({lat:c.lat,lng:c.lng});
-      const timeout=setTimeout(()=>controller.abort(),13000);
+      const timeout=setTimeout(()=>request.abort(),13000);
       let res;
-      try{res=await fetch(OVERPASS+'?data='+encodeURIComponent(q),{signal:controller.signal});}
+      try{res=await fetch(OVERPASS+'?data='+encodeURIComponent(q),{signal:request.signal});}
       finally{clearTimeout(timeout);}
       if(!res.ok)throw Error('Réponse du serveur '+res.status);
       const data=Repere3DData.convertir(await res.json());
