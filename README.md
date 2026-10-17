@@ -121,6 +121,31 @@ Le premier et le dernier sont les plus utiles : sans compte réel, un
 contributeur perd ses points en changeant de téléphone, ce qui vide le
 classement de son sens.
 
+## Repère Maps V8.2 — refonte réelle de la page carte
+
+La V8 initiale ajoutait des préférences et des couleurs sans suffisamment
+modifier la composition de l'interface. Cette révision déplace réellement
+les éléments de l'écran dans le DOM pour reproduire le concept approuvé :
+
+- Bandeau de marque **Repère Maps** avec logo et bouton **Couches**.
+- Recherche autonome juste sous le bandeau, catégories directement sur
+  la carte (sans occuper la surface principale).
+- Carte de découverte **flottante** et **compacte au démarrage** sur
+  téléphone, avec raccourci pour déplier ses fonctions.
+- Badge contextuel de carte (Abidjan dans les 30 km du centre, puis
+  Côte d'Ivoire ou Explorer la carte) : ne prétend pas connaître la position
+  GPS de l'utilisateur et décrit uniquement la zone cartographique.
+- Navigation inférieure transformée en dock indépendant, avec position
+  prenant en compte les marges de sécurité des appareils mobiles.
+- Sur ordinateur, un panneau latéral d'exploration laisse la majorité
+  de l'espace à la carte. Les commandes de guidage restent prioritaires.
+- Styles isolés dans `repere-v8-2.css` ; cache PWA v19.
+
+La vue Satellite reste réservée dans Couches, mais **désactivée** tant
+qu'un fournisseur autorisé n'a pas été intégré et testé.
+Les fonctions GPS, partage, guidage multimodal, signalement et points
+d'intérêt réutilisent les mêmes éléments, identifiants et moteurs.
+
 ## Repère Maps V8 — première phase UX/UI (sans satellite actif)
 
 **Objectif :** libérer la carte des barres et commandes concurrentes, sans réécrire
