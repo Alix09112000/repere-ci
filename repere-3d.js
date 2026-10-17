@@ -5,12 +5,12 @@ const Repere3D = (() => {
   'use strict';
   const SCRIPT = 'https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js';
   const CSS = 'https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css';
-  const OVERPASS = 'https://overpass-api.de/api/interpreter';
+  const VECTOR_STYLE = 'https://tiles.openfreemap.org/styles/bright';
+  const BUILDING_TILEJSON = 'https://tiles.openfreemap.org/planet';
   const VIDE = {type:'FeatureCollection',features:[]};
   const el = id => document.getElementById(id);
   let instance = null, active = false, ready = false, pending = null;
-  let cachedBuildings = VIDE, centerBuildings = null, timestampBuildings = 0;
-  let controller = null, timer = null, syncingFrom3D = false;
+  let syncingFrom3D = false;
   let lastPlaces = [], lastRoute = null, lastPosition = null;
   function status(message) { const e = el('repere3dStatus'); if(e)e.textContent=message; }
   function pressed(state) {
@@ -19,21 +19,9 @@ const Repere3D = (() => {
   }
   function geojson(features) { return {type:'FeatureCollection',features}; }
   function point(center) { return [Number(center.lng), Number(center.lat)]; }
-  function fond() {
-    return {
-      version:8,
-      sources: {
-        osm: {
-          type:'raster',
-          tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-          tileSize:256,
-          maxzoom:19,
-          attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributeurs'
-        }
-      },
-      layers:[{id:'fond-osm',type:'raster',source:'osm'}]
-    };
-  }
+  // Un vrai fond VECTORIEL : routes et libellés restent lisibles en perspective.
+  function fond() { return VECTOR_STYLE; }
+
   async function loadLibrary() {
     if (window.maplibregl) return;
     if (pending) return pending;
@@ -58,17 +46,37 @@ const Repere3D = (() => {
   }
   function addLayers() {
     if (!instance || ready) return;
-    addSource('repere-3d-batiments',cachedBuildings);
+    // Les empreintes/hauteurs sont déjà présentes dans les TUILES VECTORIELLES.
+    // Plus de chargement lent depuis Overpass ni de données factices par bâtiment.
+    if (!instance.getSource('repere-3d-batiments-vectoriels')) {
+      instance.addSource('repere-3d-batiments-vectoriels', {
+        type:'vector',url:BUILDING_TILEJSON
+      });
+    }
+    const firstLabel=instance.getStyle().layers.find(
+      l=>l.type==='symbol' && l.layout && l.layout['text-field']
+    )?.id;
     instance.addLayer({
       id:'repere-3d-buildings',type:'fill-extrusion',
-      source:'repere-3d-batiments',minzoom:14,
+      source:'repere-3d-batiments-vectoriels', 'source-layer':'building',
+      minzoom:15,
+      filter:['!=',['get','hide_3d'],true],
       paint:{
-        'fill-extrusion-color':['case',['get','estimated'],'#B7C7C6','#88AAA1'],
-        'fill-extrusion-height':['get','height'],
-        'fill-extrusion-base':['get','base'],
+        'fill-extrusion-color':[
+          'interpolate',['linear'],['coalesce',['get','render_height'],0],
+          0,'#DEE9E6',25,'#ADC9C3',80,'#83ADA7',180,'#6D9996'
+        ],
+        'fill-extrusion-height':[
+          'interpolate',['linear'],['zoom'],15,0,16,
+          ['coalesce',['get','render_height'],0]
+        ],
+        'fill-extrusion-base':[
+          'interpolate',['linear'],['zoom'],15,0,16,
+          ['coalesce',['get','render_min_height'],0]
+        ],
         'fill-extrusion-opacity':0.84
       }
-    });
+    }, firstLabel);
     addSource('repere-3d-parcours',VIDE);
     instance.addLayer({id:'repere-3d-route-outline',type:'line',source:'repere-3d-parcours',
       layout:{'line-cap':'round','line-join':'round'},
@@ -80,15 +88,32 @@ const Repere3D = (() => {
     instance.addLayer({id:'repere-3d-places',type:'circle',source:'repere-3d-points',
       paint:{
         'circle-color':['get','color'],
-        'circle-radius':['interpolate',['linear'],['zoom'],12,3,16,7,18,9],
-        'circle-stroke-width':2.5,'circle-stroke-color':'#fff'
+        'circle-radius':['interpolate',['linear'],['zoom'],14,3,16,5,18,6],
+        'circle-stroke-width':2,'circle-stroke-color':'#fff',
+        'circle-opacity':0.92
+      }
+    });
+    instance.addLayer({
+      id:'repere-3d-place-labels',type:'symbol',source:'repere-3d-points',
+      minzoom:17,
+      layout:{
+        'text-field':['get','name'],
+        'text-size':11,
+        'text-anchor':'top',
+        'text-offset':[0,1.1],
+        'text-allow-overlap':false
+      },
+      paint:{
+        'text-color':'#1B423A',
+        'text-halo-color':'#FFFFFF',
+        'text-halo-width':1.7
       }
     });
     addSource('repere-3d-position',VIDE);
     instance.addLayer({id:'repere-3d-gps',type:'circle',source:'repere-3d-position',
       paint:{'circle-radius':10,'circle-color':'#087F68','circle-stroke-color':'#fff','circle-stroke-width':4}});
     ready=true;
-    updatePlaces(lastPlaces);
+    renderPlaces();
     updateRoute(lastRoute);
     updatePosition(lastPosition,false);
     instance.on('click','repere-3d-places',e=>{
@@ -99,17 +124,45 @@ const Repere3D = (() => {
     instance.on('mouseenter','repere-3d-places',()=>{instance.getCanvas().style.cursor='pointer';});
     instance.on('mouseleave','repere-3d-places',()=>{instance.getCanvas().style.cursor='';});
   }
+  // Les 200 points simultanés observés en V7 masquaient complètement
+  // la ville : conserver seulement les lieux visibles et suffisamment espacés.
+  function renderPlaces() {
+    if(!ready || !instance) return;
+    const zoom=instance.getZoom();
+    if(zoom<15.5) { setGeo('repere-3d-points',VIDE);return; }
+    const center=instance.getCenter();
+    const bounds=instance.getBounds();
+    const ordered=lastPlaces.map((lieu,index)=>({lieu,index})).filter(({lieu})=>
+      bounds.contains([Number(lieu.lng),Number(lieu.lat)])
+    ).sort((a,b)=>{
+      const score=(x)=>Math.hypot((Number(x.lieu.lat)-center.lat)*111000,
+        (Number(x.lieu.lng)-center.lng)*111000*Math.cos(center.lat*Math.PI/180));
+      return score(a)-score(b);
+    });
+    const maximum=zoom>=17?22:12;
+    const occupied=[];
+    const features=[];
+    for(const {lieu,index} of ordered) {
+      const projected=instance.project([Number(lieu.lng),Number(lieu.lat)]);
+      if(occupied.some(p=>Math.abs(p.x-projected.x)<52 &&
+          Math.abs(p.y-projected.y)<42))continue;
+      occupied.push(projected);
+      const name=String(lieu.nom||'').trim().slice(0,45);
+      features.push({
+        type:'Feature',
+        properties:{index,color:ReperePoi.profil(lieu).couleur,name},
+        geometry:{type:'Point',coordinates:[Number(lieu.lng),Number(lieu.lat)]}
+      });
+      if(features.length>=maximum)break;
+    }
+    setGeo('repere-3d-points',geojson(features));
+  }
   function updatePlaces(lieux) {
     lastPlaces=(Array.isArray(lieux)?lieux:[]).filter(x=>
-      Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng))&&
-      x.lat!=null&&x.lng!=null
+      x && x.lat!=null && x.lng!=null &&
+      Number.isFinite(Number(x.lat)) && Number.isFinite(Number(x.lng))
     ).slice(0,200);
-    const feats=lastPlaces.map((l,index)=>({
-      type:'Feature',
-      properties:{index,color:ReperePoi.profil(l).couleur},
-      geometry:{type:'Point',coordinates:[Number(l.lng),Number(l.lat)]}
-    }));
-    setGeo('repere-3d-points',geojson(feats));
+    renderPlaces();
   }
   function updateRoute(route) {
     lastRoute=route&&Array.isArray(route.ligne)?route:null;
@@ -141,49 +194,6 @@ const Repere3D = (() => {
     const c=map.getCenter();
     instance.jumpTo({center:[c.lng,c.lat],zoom:Math.max(12,map.getZoom())});
   }
-  async function buildings() {
-    if(!active||!ready)return;
-    const c=instance.getCenter();
-    if(instance.getZoom()<15){
-      status('Zoomez davantage pour afficher les bâtiments 3D.');
-      return;
-    }
-    const meters=centerBuildings?map.distance([c.lat,c.lng],[centerBuildings.lat,centerBuildings.lng]):Infinity;
-    // Conserver le dernier quartier et éviter les nombreuses requêtes répétées.
-    if(meters<210 && cachedBuildings.features.length>0){
-      status(cachedBuildings.features.length+' bâtiments OSM affichés · hauteurs parfois estimées');
-      return;
-    }
-    if(Date.now()-timestampBuildings<45000)return;
-    timestampBuildings=Date.now();
-    if(controller)controller.abort();
-    const request=new AbortController();
-    controller=request;
-    status('Chargement des bâtiments cartographiés…');
-    try {
-      const q=Repere3DData.requete({lat:c.lat,lng:c.lng});
-      const timeout=setTimeout(()=>request.abort(),13000);
-      let res;
-      try{res=await fetch(OVERPASS+'?data='+encodeURIComponent(q),{signal:request.signal});}
-      finally{clearTimeout(timeout);}
-      if(!res.ok)throw Error('Réponse du serveur '+res.status);
-      const data=Repere3DData.convertir(await res.json());
-      if(!active)return;
-      cachedBuildings=data;
-      centerBuildings={lat:c.lat,lng:c.lng};
-      setGeo('repere-3d-batiments',data);
-      status(data.features.length?
-        data.features.length+' bâtiments · hauteurs estimées si absentes d’OSM':
-        'Aucun bâtiment 3D renseigné dans ce secteur. La carte reste inclinable.');
-    } catch(e){
-      if(!active)return;
-      status('Bâtiments indisponibles actuellement · retour 2D toujours possible.');
-    }
-  }
-  function scheduleBuildings() {
-    clearTimeout(timer);
-    if(active)timer=setTimeout(buildings,850);
-  }
   function enter() {
     active=true;
     el('scrCarte').classList.add('repere-3d-on');
@@ -192,13 +202,11 @@ const Repere3D = (() => {
     if(instance) {
       instance.resize();
       syncLeaflet();
-      scheduleBuildings();
+      renderPlaces();
     }
   }
   function leave() {
     active=false;
-    clearTimeout(timer);
-    controller?.abort();
     el('scrCarte').classList.remove('repere-3d-on');
     el('map3d').hidden=true;
     pressed(false);
@@ -225,14 +233,15 @@ const Repere3D = (() => {
         el('map3d').hidden=false;
         instance=new maplibregl.Map({
           container:'map3d',style:fond(),center:[c.lng,c.lat],
-          zoom:Math.max(15,map.getZoom()),pitch:57,bearing:-22,
+          zoom:Math.max(16,map.getZoom()),pitch:50,bearing:-18,
           maxPitch:75,maxZoom:19,
           canvasContextAttributes:{antialias:true},
           attributionControl:true
         });
         instance.on('load',()=>{
           addLayers();
-          if(active)scheduleBuildings();
+          status('Carte vectorielle prête · bâtiments en relief selon les données OSM.');
+          if(active)renderPlaces();
         });
         instance.on('error',e=>{
           if(!ready && active){
@@ -250,7 +259,7 @@ const Repere3D = (() => {
             map.setView([v.lat,v.lng],Math.min(19,instance.getZoom()),{animate:false});
             syncingFrom3D=false;
           }
-          scheduleBuildings();
+          renderPlaces();
         });
       }
       enter();
@@ -263,11 +272,11 @@ const Repere3D = (() => {
   function resetPerspective() {
     if(!instance||!active)return;
     const c=instance.getCenter();
-    instance.easeTo({center:[c.lng,c.lat],pitch:57,bearing:-22,duration:500});
+    instance.easeTo({center:[c.lng,c.lat],pitch:50,bearing:-18,duration:500});
   }
   function tilt() {
     if(!instance||!active)return;
-    instance.easeTo({pitch:instance.getPitch()>15?0:57,duration:450});
+    instance.easeTo({pitch:instance.getPitch()>15?0:50,duration:450});
   }
   function setup() {
     el('repereMap3D')?.addEventListener('click',toggle);
