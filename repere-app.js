@@ -465,68 +465,125 @@ function afficherRoute(route, dest, nom, enGuidage) {
   const ligne = route.geometry.coordinates.map((c) => [c[1], c[0]]);
 
   coucheTrajet.clearLayers();
-  L.polyline(ligne, { color: '#ffffff', weight: 10, opacity: 1 }).addTo(coucheTrajet);
-  L.polyline(ligne, { color: '#0F766E', weight: 6, opacity: 1, lineCap: 'round' }).addTo(coucheTrajet);
+  L.polyline(ligne, { color: '#ffffff', weight: 11, opacity: 1 }).addTo(coucheTrajet);
+  L.polyline(ligne, { color: '#087F68', weight: 6, opacity: 1, lineCap: 'round' }).addTo(coucheTrajet);
   if (marqueurDest) map.removeLayer(marqueurDest);
   marqueurDest = L.marker([dest.lat, dest.lng], { icon: carre(19, '#13232A', true) }).addTo(map);
-  if (!enGuidage) map.fitBounds(L.latLngBounds(ligne), { padding: [50, 50] });
+  if (!enGuidage) {
+    const desktop = window.matchMedia('(min-width:900px)').matches;
+    map.fitBounds(L.latLngBounds(ligne), {
+      paddingTopLeft: desktop ? [450, 85] : [28, 85],
+      paddingBottomRight: desktop ? [65, 65] : [28, 300],
+      maxZoom: 16
+    });
+  }
 
-  /* Les signalements qui touchent le trajet passent avant les instructions :
-     un bouchon à trois rues de là n'intéresse personne. */
+  /* Des alertes à proximité du tracé restent visibles, mais elles ne sont
+     pas assimilées à une mesure du trafic en temps réel. */
   const surLaRoute = S.alertes.filter((a) =>
     ligne.some((q) => Math.abs(q[0] - a.lat) < 0.0025 && Math.abs(q[1] - a.lng) < 0.0025));
 
   $('tDest').textContent = nom;
+  $('tDuree').textContent = fmt.duree(route.duration);
+  $('tDistance').textContent = fmt.distance(route.distance);
+  $('tArrivee').textContent = fmt.heure(new Date(Date.now() + route.duration * 1000));
   const res = $('tResume');
-  res.textContent = fmt.distance(route.distance) + ' · ' + fmt.duree(route.duration) +
-    ' · arrivée ' + fmt.heure(new Date(Date.now() + route.duration * 1000)) +
-    (surLaRoute.length ? ' · ' + surLaRoute.length + ' alerte(s)' : '');
-  res.style.color = surLaRoute.length ? 'var(--accent)' : '';
+  res.textContent = 'Estimations sans trafic en temps réel' +
+    (surLaRoute.length ? ' · ' + surLaRoute.length + ' signalement(s) sur le trajet' : '');
+  res.style.color = surLaRoute.length ? 'var(--alert-ink)' : '';
 
   const e = $('tEtapes');
-  e.innerHTML = '';
+  e.replaceChildren();
   surLaRoute.forEach((a) => {
-    const d2 = document.createElement('div');
-    d2.className = 'etape';
-    d2.innerHTML = '<span class="n" style="color:var(--accent)">!</span>' +
-      '<span style="flex:1;min-width:0"><span class="nm">' + a.libelle + '</span>' +
-      (a.commentaire ? '<br/><span class="sub">' + a.commentaire + '</span>' : '') + '</span>';
-    e.appendChild(d2);
+    const item = document.createElement('div');
+    item.className = 'etape repere-route-warning';
+    const picto = document.createElement('span');
+    picto.className = 'n';
+    picto.textContent = '!';
+    const corps = document.createElement('span');
+    corps.className = 'repere-step-text';
+    const titre = document.createElement('strong');
+    titre.textContent = String(a.libelle || 'Signalement');
+    corps.appendChild(titre);
+    if (a.commentaire) {
+      const commentaire = document.createElement('span');
+      commentaire.textContent = String(a.commentaire);
+      corps.appendChild(commentaire);
+    }
+    item.append(picto, corps);
+    e.appendChild(item);
   });
-  (route.legs[0].steps || []).forEach((pas) => {
-    const d2 = document.createElement('div');
-    d2.className = 'etape';
-    d2.innerHTML = '<span class="n">' + fmt.distance(pas.distance) + '</span>' +
-      '<span style="flex:1;min-width:0">' + direManoeuvre(pas) + '</span>';
-    e.appendChild(d2);
+  const etapes = route.legs[0].steps || [];
+  etapes.forEach((pas, index) => {
+    const item = document.createElement('div');
+    item.className = 'etape';
+    const numero = document.createElement('span');
+    numero.className = 'n';
+    numero.textContent = String(index + 1);
+    const texte = document.createElement('span');
+    texte.className = 'repere-step-text';
+    const manoeuvre = document.createElement('strong');
+    manoeuvre.textContent = direManoeuvre(pas);
+    const distance = document.createElement('span');
+    distance.textContent = fmt.distance(pas.distance);
+    texte.append(manoeuvre, distance);
+    item.append(numero, texte);
+    e.appendChild(item);
   });
+  $('btnEtapes').disabled = e.children.length === 0;
 
-  Nav.route = { ligne: ligne, etapes: route.legs[0].steps || [], dest: dest, nom: nom };
+  Nav.route = { ligne: ligne, etapes: etapes, dest: dest, nom: nom };
   Nav.preparer();
 }
 
-/* Les tracés concurrents d'OSRM, affichés en chips au-dessus du bouton de
-   départ. Choisis-en un redessine la carte sans tout recalculer. */
+/* Comparaison accessible : sélection d'une route sans appel réseau supplémentaire. */
 function afficherAlternatives(routes, dest, nom) {
   const z = $('tAlternatives');
-  z.innerHTML = '';
-  if (routes.length < 2) { z.style.display = 'none'; return; }
-  z.style.display = 'flex';
+  z.replaceChildren();
+  if (routes.length < 2) { z.hidden = true; return; }
+  z.hidden = false;
+  const minimum = Math.min(...routes.map((r) => r.duration));
   routes.forEach((route, i) => {
     const b = document.createElement('button');
-    b.className = 'chip' + (i === 0 ? ' acc' : '');
-    b.style.flex = 'none';
-    b.textContent = fmt.duree(route.duration) + ' · ' + fmt.distance(route.distance) +
-      (i === 0 ? ' · plus rapide' : '');
+    b.type = 'button';
+    b.className = 'repere-route-option' + (i === 0 ? ' is-selected' : '');
+    b.setAttribute('aria-pressed', String(i === 0));
+    const nomOption = document.createElement('span');
+    nomOption.className = 'repere-route-option-name';
+    nomOption.textContent = 'Trajet ' + (i + 1) +
+      (route.duration === minimum ? ' · le plus rapide' : '');
+    const duree = document.createElement('strong');
+    duree.textContent = fmt.duree(route.duration);
+    const distance = document.createElement('span');
+    distance.className = 'repere-route-option-distance';
+    distance.textContent = fmt.distance(route.distance);
+    b.append(nomOption, duree, distance);
     b.addEventListener('click', () => {
-      z.querySelectorAll('.chip').forEach((x) => x.classList.remove('acc'));
-      b.classList.add('acc');
+      z.querySelectorAll('.repere-route-option').forEach((x) => {
+        const selected = x === b;
+        x.classList.toggle('is-selected', selected);
+        x.setAttribute('aria-pressed', String(selected));
+      });
       afficherRoute(route, dest, nom, false);
     });
     z.appendChild(b);
   });
 }
 
+function replierEtapes() {
+  $('tEtapes').hidden = true;
+  $('btnEtapes').setAttribute('aria-expanded', 'false');
+  $('btnEtapes').querySelector('span').textContent = 'Voir les étapes de l’itinéraire';
+}
+$('btnEtapes').addEventListener('click', () => {
+  const etapes = $('tEtapes');
+  etapes.hidden = !etapes.hidden;
+  $('btnEtapes').setAttribute('aria-expanded', String(!etapes.hidden));
+  $('btnEtapes').querySelector('span').textContent = etapes.hidden
+    ? 'Voir les étapes de l’itinéraire' : 'Masquer les étapes';
+});
+
+let sequenceTrajet = 0;
 async function tracerTrajet(dest, nom) {
   if (!Geo.derniere) {
     return localiser(() => tracerTrajet(dest, nom), (m) => toast(m));
@@ -546,22 +603,27 @@ async function tracerTrajet(dest, nom) {
     majBoutonSuivi();
   }
   const p = Geo.derniere;
+  const demande = ++sequenceTrajet;
   toast('Calcul du trajet…');
   try {
     const r = await fetch(OSRM + p.lng + ',' + p.lat + ';' + dest.lng + ',' + dest.lat +
       '?overview=full&geometries=geojson&steps=true&alternatives=true');
+    if (!r.ok) throw new Error('Service de routage indisponible');
     const d = await r.json();
+    if (demande !== sequenceTrajet) return;
     if (!d.routes || !d.routes.length) throw new Error('Aucune route');
 
     afficherRoute(d.routes[0], dest, nom, enGuidage);
-    if (enGuidage) return;   // le bandeau de consigne reprend la main tout seul
+    if (enGuidage) return;
+    replierEtapes();
     afficherAlternatives(d.routes, dest, nom);
     $('btnDemarrer').style.display = 'flex';
     $('trajet').classList.add('on');
+    document.getElementById('scrCarte').classList.add('repere-route-preview');
     $('suggest').classList.remove('on');
     $('feuilleBas').style.display = 'none';
   } catch (err) {
-    toast('Trajet impossible à calculer — réessaie.');
+    if (demande === sequenceTrajet) toast('Trajet impossible à calculer — réessaie.');
   }
 }
 
@@ -571,9 +633,12 @@ window.allerVers = (lat, lng, nom) => { map.closePopup(); allerA('scrCarte'); tr
    (avant guidage), interrompu en cours de route, ou terminé à l'arrivée :
    la carte doit toujours revenir à son état de départ. */
 function finirTrajet() {
+  ++sequenceTrajet;
   Nav.arreter();
   $('trajet').classList.remove('on');
+  document.getElementById('scrCarte').classList.remove('repere-route-preview');
   $('feuilleBas').style.display = 'flex';
+  replierEtapes();
   coucheTrajet.clearLayers();
   if (marqueurDest) { map.removeLayer(marqueurDest); marqueurDest = null; }
   if (Nav.suiviCode) {
@@ -699,6 +764,7 @@ const Nav = {
     // bande de filtres dépassait sous le bandeau rouge.
     document.querySelector('#scrCarte .mapwrap').classList.add('guidage');
     $('trajet').classList.remove('on');
+    document.getElementById('scrCarte').classList.remove('repere-route-preview');
     $('carteEtat').classList.add('guidage');
     majBoutonVoix();
     allerA('scrCarte');
