@@ -28,4 +28,4 @@ jobs:
           node --check repere-routing.js
           node --check repere-app.js
       - name: Exécuter les tests de routage
-        run: node --test tests/repere-routing.test.cjs
+        run: node --test tests/*.test.cjs
