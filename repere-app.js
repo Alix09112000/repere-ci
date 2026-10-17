@@ -165,11 +165,25 @@ function serveurEstReveille() {
 }
 
 let chargeEnCours = null;
+/* Les points GeoDeliver sont situés en Côte d'Ivoire. La carte OSM, elle,
+   peut être explorée partout : éviter les requêtes hors couverture et
+   expliquer clairement l'absence de repères. */
+function carteDansCI() {
+  const c = map.getCenter();
+  return c.lat >= CI.latMin && c.lat <= CI.latMax &&
+         c.lng >= CI.lngMin && c.lng <= CI.lngMax;
+}
 async function chargerLieux() {
   const c = map.getCenter();
   const rayon = Math.min(3000, Math.round(map.getBounds().getNorthEast().distanceTo(c)));
   const cle = c.lat.toFixed(4) + c.lng.toFixed(4) + rayon + S.filtre;
   chargeEnCours = cle;
+  if (!carteDansCI()) {
+    coucheLieux.clearLayers();
+    S.nbLieux = 0;
+    majEtat();
+    return;
+  }
   try {
     const d = await Api.lieuxProches(c.lat, c.lng, rayon, S.filtre);
     serveurEstReveille();
@@ -190,7 +204,7 @@ async function chargerLieux() {
 /* Toucher le bandeau d'état relance le chargement quand il affiche l'échec :
    plus besoin de rebouger la carte pour réessayer. */
 $('carteEtat').addEventListener('click', () => {
-  if (S.nbLieux !== null) return;
+  if (!carteDansCI() || S.nbLieux !== null) return;
   toast('Nouvelle tentative…');
   chargerLieux();
   chargerAlertes();
@@ -205,11 +219,22 @@ function popupLieu(l) {
 }
 
 /* ═══ SIGNALEMENTS SUR LA CARTE ═══ */
+let alertesChargeId = 0;
 async function chargerAlertes() {
+  const numero = ++alertesChargeId;
+  if (!carteDansCI()) {
+    S.alertes = [];
+    coucheAlertes.clearLayers();
+    majAlertes();
+    majEtat();
+    majAlerteProche();
+    return;
+  }
   const c = map.getCenter();
   const rayon = Math.min(6000, Math.round(map.getBounds().getNorthEast().distanceTo(c)));
   try {
     const d = await Api.alertes(c.lat, c.lng, rayon);
+    if (numero !== alertesChargeId || !carteDansCI()) return;
     serveurEstReveille();
     S.alertes = d.signalements || [];
     coucheAlertes.clearLayers();
@@ -219,6 +244,7 @@ async function chargerAlertes() {
         .addTo(coucheAlertes);
     });
   } catch (e) {
+    if (numero !== alertesChargeId || !carteDansCI()) return;
     S.alertes = [];
     const l = $('listeAlertes');
     l.innerHTML = '';
@@ -265,13 +291,15 @@ window.infirmerAlerte = async (id) => {
 /* Une seule ligne pour les deux couches. L'attribution OpenStreetMap reste à
    droite, portée par Leaflet : la licence ODbL l'exige. */
 function majEtat() {
-  const bouts = [S.nbLieux === null ? 'Repères indisponibles — toucher pour réessayer' : S.nbLieux + ' repères'];
+  const horsCI = !carteDansCI();
+  const bouts = [horsCI ? 'Repères disponibles en Côte d’Ivoire'
+    : (S.nbLieux === null ? 'Repères indisponibles — toucher pour réessayer' : S.nbLieux + ' repères')];
   if (S.alertes.length) bouts.push(S.alertes.length + ' alerte' + (S.alertes.length > 1 ? 's' : ''));
   const el = $('carteEtat');
   el.textContent = bouts.join(' · ');
   el.style.color = S.alertes.length ? 'var(--accent)' : 'var(--ink-70)';
-  el.style.cursor = S.nbLieux === null ? 'pointer' : '';
-  el.style.textDecoration = S.nbLieux === null ? 'underline' : 'none';
+  el.style.cursor = !horsCI && S.nbLieux === null ? 'pointer' : '';
+  el.style.textDecoration = !horsCI && S.nbLieux === null ? 'underline' : 'none';
 }
 
 /* L'accueil ne montre qu'une alerte : la plus proche. Le reste est dans
