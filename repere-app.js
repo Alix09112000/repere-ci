@@ -231,7 +231,7 @@ function ouvrirFicheLieu(l) {
 
   const details = [l.commune, l.quartier, l.ville]
     .filter(Boolean).map(String).filter((v, i, all) => all.indexOf(v) === i);
-  if (Number.isFinite(Number(l.distance_m)) && Number(l.distance_m) >= 0) {
+  if (l.distance_m != null && Number.isFinite(Number(l.distance_m)) && Number(l.distance_m) >= 0) {
     details.push('À ' + fmt.distance(Number(l.distance_m)));
   }
   if (details.length) {
@@ -878,6 +878,11 @@ function fermerSuggestions() {
   $('suggest').classList.remove('on');
   $('qDest').setAttribute('aria-expanded', 'false');
 }
+function annulerRecherche() {
+  ++numeroRecherche;
+  clearTimeout(minuteur);
+  fermerSuggestions();
+}
 function etatRecherche(message) {
   const s = $('suggest');
   const note = document.createElement('p');
@@ -921,7 +926,7 @@ function proposer(items) {
     b.append(picto, corps, fleche);
     b.addEventListener('click', () => {
       $('qDest').value = String(it.nom || '');
-      fermerSuggestions();
+      annulerRecherche();
       $('qDest').blur();
       ouvrirFicheLieu(it);
     });
