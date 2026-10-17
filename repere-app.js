@@ -100,8 +100,15 @@ const fondDetails = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{
   attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · style <a href="https://www.hotosm.org/">HOT</a> · hébergement OSM France',
   maxZoom: 19, subdomains: 'abc'
 });
-const fondsCarte = { plan: fondPlan, details: fondDetails };
-let fondActif = Store.lire('fondCarte', 'plan') === 'details' ? 'details' : 'plan';
+/* Optional satellite provider: configure an authorized XYZ tile endpoint.
+   No imagery is fetched until a provider URL has been configured. */
+const SATELLITE_URL = window.REPERE_SATELLITE_TILE_URL || '';
+const fondSatellite = SATELLITE_URL ? L.tileLayer(SATELLITE_URL, {
+  attribution: window.REPERE_SATELLITE_ATTRIBUTION || 'Imagerie : fournisseur configuré',
+  maxZoom: 20, maxNativeZoom: 19
+}) : null;
+const fondsCarte = { plan: fondPlan, details: fondDetails, ...(fondSatellite ? {satellite:fondSatellite} : {}) };
+let fondActif = ['plan','details','satellite'].includes(Store.lire('fondCarte','plan')) && fondsCarte[Store.lire('fondCarte','plan')] ? Store.lire('fondCarte','plan') : 'plan';
 fondsCarte[fondActif].addTo(map);
 map.attributionControl.setPrefix('');
 
@@ -116,9 +123,16 @@ function choisirFondCarte(type) {
   }
   $('repereMapPlan').setAttribute('aria-pressed', String(type === 'plan'));
   $('repereMapDetail').setAttribute('aria-pressed', String(type === 'details'));
+  $('repereMapSatellite')?.setAttribute('aria-pressed', String(type === 'satellite'));
 }
 $('repereMapPlan').addEventListener('click', () => choisirFondCarte('plan'));
 $('repereMapDetail').addEventListener('click', () => choisirFondCarte('details'));
+$('repereMapSatellite')?.addEventListener('click', () => {
+  if (!fondSatellite) { toast('Satellite : une source d’imagerie autorisée doit être configurée.'); return; }
+  if (window.Repere3D?.isActive?.()) window.Repere3D.leave();
+  choisirFondCarte('satellite');
+});
+if(fondSatellite) $('repereSatelliteStatus').textContent='Imagerie aérienne';
 choisirFondCarte(fondActif);
 
 /* Regroupement natif via Leaflet.markercluster, avec repli sans plugin.
