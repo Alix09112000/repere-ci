@@ -7,7 +7,7 @@ const lire=n=>fs.readFileSync(path.join(__dirname,'..',n),'utf8');
 
 test('carte vectorielle et bâtiments OpenFreeMap : pas de raster étiré',()=>{
  const code=lire('repere-3d.js');
- assert.match(code,/https:\/\/tiles\.openfreemap\.org\/styles\/bright/);
+ assert.match(code,/https:\/\/tiles\.openfreemap\.org\/styles\/(?:bright|liberty)/);
  assert.match(code,/https:\/\/tiles\.openfreemap\.org\/planet/);
  assert.match(code,/source-layer':'building'/);
  assert.match(code,/fill-extrusion/);
