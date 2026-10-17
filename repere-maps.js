@@ -9,6 +9,8 @@
   const searchButton = document.getElementById('btnChercher');
   const suggest = document.getElementById('suggest');
   const guidance = document.getElementById('consigne');
+  const coverageNote = document.getElementById('repereCoverageNote');
+  const returnAbidjan = document.getElementById('repereReturnAbidjan');
   if (!root || !sheet || !toggle || !search || !searchButton || !suggest) return;
 
   function isCompact() {
@@ -40,9 +42,12 @@
       const filterButton = Array.from(document.querySelectorAll('#scrCarte .filtres button[data-cat]'))
         .find((item) => item.dataset.cat === category);
       if (filterButton) {
-        filterButton.click(); // Exécute le filtre existant, donc chargerLieux().
+        // Toucher à nouveau une catégorie sélectionnée revient à « Tout ».
+        const alreadySelected = filterButton.classList.contains('acc');
+        const all = root.querySelector('.filtres button[data-cat=""]');
+        (alreadySelected && all ? all : filterButton).click();
         quickButtons.forEach((item) => item.classList.toggle(
-          'is-selected', item === button && category !== ''
+          'is-selected', !alreadySelected && item === button && category !== ''
         ));
         if (isCompact()) setCollapsed(true); // Laisse voir les résultats sur la carte.
       } else {
@@ -64,6 +69,29 @@
       'is-selected', item.dataset.repereCategory === b.dataset.cat && b.dataset.cat !== ''
     ));
   });
+
+  // Les tuiles OSM restent accessibles partout ; seuls les repères
+  // communautaires Repère CI sont disponibles en Côte d'Ivoire.
+  function updateCoverage() {
+    if (!coverageNote || typeof map === 'undefined' || typeof CI === 'undefined') return;
+    const point = map.getCenter();
+    const inside = point.lat >= CI.latMin && point.lat <= CI.latMax &&
+                   point.lng >= CI.lngMin && point.lng <= CI.lngMax;
+    coverageNote.hidden = inside;
+    refreshSheetHeight();
+  }
+  if (typeof map !== 'undefined') map.on('moveend', updateCoverage);
+  if (returnAbidjan) {
+    returnAbidjan.addEventListener('click', () => {
+      const all = root.querySelector('.filtres button[data-cat=""]');
+      if (all && !all.classList.contains('acc')) all.click();
+      if (typeof map !== 'undefined' && typeof ABIDJAN !== 'undefined') {
+        map.setView([ABIDJAN.lat, ABIDJAN.lng], 14, { animate: false });
+      }
+      if (isCompact()) setCollapsed(false);
+      updateCoverage();
+    });
+  }
 
   search.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
@@ -93,5 +121,6 @@
     if (typeof map !== 'undefined') map.invalidateSize();
   });
   refreshGuidance();
+  updateCoverage();
   refreshSheetHeight();
 })();
