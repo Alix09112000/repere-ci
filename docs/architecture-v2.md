@@ -3,7 +3,7 @@
 > Branche de préparation. Aucune migration en production n'est implicite.
 
 ## Objectifs
-- Étendre la couverture d'Abidjan à Lomé puis à d'autres villes africaines, sans dupliquer l'application.
+- Étendre progressivement la couverture à toute l’Afrique de l’Ouest (16 pays), sans dupliquer l’application.
 - Réduire la dépendance aux fournisseurs de fonds de carte avec un hébergement maîtrisé.
 - Préserver le GPS, les repères, le partage de position, les signalements et le guidage.
 - Distinguer données géographiques, affichage, recherche, routage et services métier.
@@ -36,7 +36,7 @@ La carte vectorielle et le routage sont deux services indépendants. ArcGIS Pro 
 1. **Court terme** : conserver Leaflet et ajouter un fond de carte de secours conforme aux conditions d'utilisation, pour rétablir l'affichage.
 2. **Prototype** : produire un jeu de tuiles vectorielles pour Abidjan, tester le rendu dans MapLibre sur une page isolée.
 3. **Production** : publier un style versionné et un hébergement de tuiles avec CORS, cache et surveillance.
-4. **Extension** : ajouter Lomé et tester le chargement multi-pays.
+4. **Extension** : ajouter Lomé, Cotonou, Ouagadougou et d’autres villes, puis étendre progressivement à 16 pays d’Afrique de l’Ouest.
 5. **Routage** : préparer les graphes routiers régionaux et vérifier les liaisons transfrontalières.
 
 Ne pas migrer Leaflet vers MapLibre avant tests de parité fonctionnelle.
@@ -61,6 +61,10 @@ Ne pas migrer Leaflet vers MapLibre avant tests de parité fonctionnelle.
 ```
 
 ## Contrat de configuration régional (proposition)
+
+La liste initiale de 16 pays et villes pilotes est maintenant enregistrée dans `cartography/config/regions.json`. Les centres sont indicatifs, et chaque région est marquée `planned` : aucune couverture opérationnelle n’est présumée.
+
+### Exemple minimal
 ```json
 {
   "version": 1,
