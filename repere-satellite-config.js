@@ -3,4 +3,4 @@
  * Do not use a private/server API key here.
  * Until configured, satellite stays unavailable.
  */
-window.REPERE_MAPTILER_KEY = '';
+window.REPERE_MAPTILER_KEY = 'XPKx6jgUcuNp2ArEejw2';
