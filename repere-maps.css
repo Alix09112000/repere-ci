@@ -431,3 +431,9 @@ body,#app,.scr{background:var(--bg)}
 @media(prefers-reduced-motion:reduce){
   #trajet .repere-steps-chevron{transition:none}
 }
+
+
+#trajet .repere-route-safety{
+  margin:0;padding:0 20px 16px;font-size:11px;
+  line-height:1.5;color:#6A7C74;text-align:center
+}
