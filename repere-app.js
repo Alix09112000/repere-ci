@@ -209,7 +209,7 @@ function iconeLieu(lieu) {
     className: 'repere-marker-icon', iconSize: [36, 42],
     iconAnchor: [18, 40], popupAnchor: [0, -34], tooltipAnchor: [0, -35],
     html: '<span class="repere-place-marker" style="--poi-color:' + p.couleur + '">' +
-          p.icone + '</span>'
+          '<span class="repere-place-marker-inner">' + p.icone + '</span></span>'
   });
 }
 function listeRepereAutour(lieux, message) {
