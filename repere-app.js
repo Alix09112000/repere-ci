@@ -563,7 +563,7 @@ function styleModeTrajet() {
   return STYLES_PAR_MODE[lireOptionsTrajet().mode] || STYLES_PAR_MODE.voiture;
 }
 
-/* Dessine un tracé précis (un des choix OSRM) et met à jour tout ce qui en
+/* Dessine le tracé réel renvoyé par le moteur multimodal et met à jour tout ce qui en
    dépend : couche de la carte, résumé, étapes, et l'état de navigation. */
 function afficherRoute(route, dest, nom, enGuidage) {
   const ligne = route.geometry.coordinates.map((c) => [c[1], c[0]]);
@@ -684,8 +684,8 @@ function afficherAlternatives(routes, dest, nom) {
     const nomOption = document.createElement('span');
     nomOption.className = 'repere-route-option-name';
     const pointsForts = [];
-    if (route.duration === minimum) pointsForts.push('le plus rapide');
-    if (route.distance === lePlusCourt) pointsForts.push('le plus court');
+    if (route.duration === minimum) pointsForts.push('le plus rapide proposé');
+    if (route.distance === lePlusCourt) pointsForts.push('le plus court proposé');
     if (routes.length > 1 && route.distance === lePlusLong && lePlusLong > lePlusCourt) {
       pointsForts.push('le plus long proposé');
     }
