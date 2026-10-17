@@ -279,8 +279,7 @@ body,#app,.scr{background:var(--bg)}
   .repere-place-action.primaire{grid-column:auto}
 }
 
-/* Repère Maps V4 — panneau d'itinéraire, comparaison, guidage.
-   Les modes sont limités à la voiture : le serveur OSRM utilise "driving". */
+/* Repère Maps V4/V5 — itinéraires responsives et navigation multimodale. */
 #scrCarte.repere-route-preview .feuille-bas {display:none!important}
 #scrCarte.repere-route-preview .filtres {display:none!important}
 #scrCarte.repere-route-preview .cmds {bottom:calc(66px + env(safe-area-inset-bottom) + 380px)}
