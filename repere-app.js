@@ -89,10 +89,36 @@ const losange = (fiabilite) => L.divIcon({
 
 const map = L.map('map', { zoomControl: false, attributionControl: true })
   .setView([ABIDJAN.lat, ABIDJAN.lng], 14);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: ATTRIBUTION, maxZoom: 19, subdomains: 'abc'
-}).addTo(map);
+/* Les deux vues utilisent des données OSM réelles : la vue Repères
+   privilégie les écoles, points de soin et autres lieux utiles.
+   Elle ne prétend pas être une imagerie satellite. */
+const fondPlan = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: ATTRIBUTION, maxZoom: 19
+});
+const fondDetails = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · style <a href="https://www.hotosm.org/">HOT</a> · hébergement OSM France',
+  maxZoom: 19, subdomains: 'abc'
+});
+const fondsCarte = { plan: fondPlan, details: fondDetails };
+let fondActif = Store.lire('fondCarte', 'plan') === 'details' ? 'details' : 'plan';
+fondsCarte[fondActif].addTo(map);
 map.attributionControl.setPrefix('');
+
+function choisirFondCarte(type) {
+  if (!(type in fondsCarte)) return;
+  if (type !== fondActif) {
+    map.removeLayer(fondsCarte[fondActif]);
+    fondActif = type;
+    fondsCarte[type].addTo(map);
+    fondsCarte[type].bringToBack();
+    Store.ecrire('fondCarte', type);
+  }
+  $('repereMapPlan').setAttribute('aria-pressed', String(type === 'plan'));
+  $('repereMapDetail').setAttribute('aria-pressed', String(type === 'details'));
+}
+$('repereMapPlan').addEventListener('click', () => choisirFondCarte('plan'));
+$('repereMapDetail').addEventListener('click', () => choisirFondCarte('details'));
+choisirFondCarte(fondActif);
 
 /* Regroupement natif via Leaflet.markercluster, avec repli sans plugin.
    Les lieux se séparent progressivement au zoom : 200 repères ne cachent
@@ -128,8 +154,8 @@ function monterMinimap() {
     zoomControl: false, attributionControl: false, dragging: false,
     scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false
   }).setView([ABIDJAN.lat, ABIDJAN.lng], 16);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19, subdomains: 'abc'
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
   }).addTo(minimap);
 }
 
