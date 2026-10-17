@@ -16,6 +16,9 @@
   const layersPanel = document.getElementById('repereLayersPanel');
   const layersClose = document.getElementById('repereLayersClose');
   const placesToggle = document.getElementById('reperePlacesToggle');
+  const exploreShortcut = document.getElementById('repereExploreShortcut');
+  const contextButton = document.getElementById('repereMapContext');
+  const contextLabel = document.getElementById('repereMapContextLabel');
 
   if (!root || !sheet || !toggle || !search || !searchButton || !suggest) return;
 
@@ -94,6 +97,18 @@
     if (!isCompact()) return;
     setCollapsed(!root.classList.contains('sheet-collapsed'));
   });
+  exploreShortcut?.addEventListener('click', () => {
+    setCollapsed(false);
+    toggle.focus({preventScroll:true});
+  });
+  contextButton?.addEventListener('click', () => {
+    if (isCompact()) {
+      setCollapsed(false);
+      toggle.focus({preventScroll:true});
+    } else {
+      sheet.scrollIntoView({block:'nearest',behavior:'smooth'});
+    }
+  });
 
   // Préserve les raccourcis accessibles sans imposer une nouvelle recherche API :
   // les catégories réutilisent le filtre et le chargement existants de la carte.
@@ -141,6 +156,13 @@
     const inside = point.lat >= CI.latMin && point.lat <= CI.latMax &&
                    point.lng >= CI.lngMin && point.lng <= CI.lngMax;
     coverageNote.hidden = inside;
+    if (contextLabel) {
+      const inAbidjan = inside && map.distance(
+        [point.lat,point.lng],[ABIDJAN.lat,ABIDJAN.lng]
+      ) <= 30000;
+      contextLabel.textContent = inAbidjan ? 'Abidjan · Repères à proximité' :
+        inside ? 'Côte d’Ivoire · Repères locaux' : 'Explorer la carte';
+    }
     refreshSheetHeight();
   }
   if (typeof map !== 'undefined') map.on('moveend', updateCoverage);
