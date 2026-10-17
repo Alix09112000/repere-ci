@@ -115,6 +115,7 @@ const coucheLieux = typeof L.markerClusterGroup === 'function'
   : L.layerGroup().addTo(map);
 const coucheAlertes = L.layerGroup().addTo(map);
 const coucheTrajet = L.layerGroup().addTo(map);
+let coucheParcourue = null; // Portion réellement suivie grâce aux relevés GPS.
 let marqueurMoi = null;
 let marqueurDest = null;
 
@@ -459,18 +460,62 @@ function direManoeuvre(pas) {
   return rue ? t + ' sur ' + rue : t;
 }
 
+
+/* Découpe la géométrie uniquement jusqu'au dernier point GPS reçu.
+   N'imite jamais un déplacement lorsque le téléphone reste immobile. */
+function dessinerAvancementGPS(avance) {
+  if (!coucheParcourue || !Nav.route || !Nav.cum || !Nav.cum.length) return;
+  const path = Nav.route.ligne, cumul = Nav.cum;
+  const distance = Math.max(0, Math.min(Number(avance) || 0, Nav.longueur));
+  if (!path.length) return;
+  const part = [path[0]];
+  for (let i = 1; i < path.length; i++) {
+    if (cumul[i] <= distance) {
+      part.push(path[i]);
+    } else {
+      const taille = cumul[i] - cumul[i - 1];
+      const t = taille ? Math.max(0, Math.min(1, (distance - cumul[i-1]) / taille)) : 0;
+      if (t > 0) part.push([
+        path[i-1][0] + t * (path[i][0] - path[i-1][0]),
+        path[i-1][1] + t * (path[i][1] - path[i-1][1])
+      ]);
+      break;
+    }
+  }
+  coucheParcourue.setLatLngs(part);
+}
+
+function etatSignalGPS(message, quality) {
+  const status = $('repereGpsStatus');
+  if (!status) return;
+  if (status.textContent !== message) status.textContent = message;
+  status.dataset.quality = quality;
+}
+
 /* Dessine un tracé précis (un des choix OSRM) et met à jour tout ce qui en
    dépend : couche de la carte, résumé, étapes, et l'état de navigation. */
 function afficherRoute(route, dest, nom, enGuidage) {
   const ligne = route.geometry.coordinates.map((c) => [c[1], c[0]]);
+  // Les grappes de repères recouvrent la polyligne : les retirer pendant
+  // l'itinéraire, puis les rétablir une fois le trajet terminé.
+  if (map.hasLayer(coucheLieux)) map.removeLayer(coucheLieux);
 
   coucheTrajet.clearLayers();
-  L.polyline(ligne, { color: '#ffffff', weight: 11, opacity: 1 }).addTo(coucheTrajet);
-  L.polyline(ligne, { color: '#087F68', weight: 6, opacity: 1, lineCap: 'round' }).addTo(coucheTrajet);
+  L.polyline(ligne, { color: '#fff', weight: 11, opacity: 1 }).addTo(coucheTrajet);
+  L.polyline(ligne, { color: '#087F68', weight: 7, opacity: 1, lineCap: 'round' }).addTo(coucheTrajet);
+  // Flux illustratif sur l'aperçu : ce ne sont pas des données de trafic.
+  L.polyline(ligne, {
+    color: '#FFFFFF', weight: 2, opacity: .65, dashArray: '5 18',
+    interactive: false, className: 'repere-route-flow'
+  }).addTo(coucheTrajet);
+  // Tant que le GPS ne fournit pas de nouvelle position, cette couche est vide.
+  coucheParcourue = L.polyline([], {
+    color: '#A0B4B2', weight: 7, opacity: 1, lineCap: 'round', interactive: false
+  }).addTo(coucheTrajet);
   if (marqueurDest) map.removeLayer(marqueurDest);
   marqueurDest = L.marker([dest.lat, dest.lng], { icon: carre(19, '#13232A', true) }).addTo(map);
   if (!enGuidage) {
-    const desktop = window.matchMedia('(min-width:900px)').matches;
+    const desktop = window.matchMedia('(min-width:720px)').matches;
     map.fitBounds(L.latLngBounds(ligne), {
       paddingTopLeft: desktop ? [450, 85] : [28, 85],
       paddingBottomRight: desktop ? [65, 65] : [28, 300],
@@ -488,7 +533,7 @@ function afficherRoute(route, dest, nom, enGuidage) {
   $('tDistance').textContent = fmt.distance(route.distance);
   $('tArrivee').textContent = fmt.heure(new Date(Date.now() + route.duration * 1000));
   const res = $('tResume');
-  res.textContent = 'Estimations sans trafic en temps réel' +
+  res.textContent = 'Aperçu du tracé · le GPS suit votre position après « Démarrer » · sans trafic en temps réel' +
     (surLaRoute.length ? ' · ' + surLaRoute.length + ' signalement(s) sur le trajet' : '');
   res.style.color = surLaRoute.length ? 'var(--alert-ink)' : '';
 
@@ -640,6 +685,8 @@ function finirTrajet() {
   $('feuilleBas').style.display = 'flex';
   replierEtapes();
   coucheTrajet.clearLayers();
+  coucheParcourue = null;
+  if (!map.hasLayer(coucheLieux)) coucheLieux.addTo(map);
   if (marqueurDest) { map.removeLayer(marqueurDest); marqueurDest = null; }
   if (Nav.suiviCode) {
     Api.suiviTerminer(Nav.suiviCode).catch(() => {});
@@ -756,6 +803,7 @@ const Nav = {
     if (!('geolocation' in navigator)) return toast('Ce téléphone ne donne pas la position.');
 
     Nav.actif = true;
+    etatSignalGPS('Recherche du signal GPS…', 'waiting');
     Nav.etape = 0;
     Nav.annonces = {};
     Nav.horsRoute = 0;
@@ -782,7 +830,18 @@ const Nav = {
        ne rend un point que lorsqu'il a bougé, ce qui ménage la batterie. */
     Nav.veille = navigator.geolocation.watchPosition(
       (p) => Nav.avancer({ lat: p.coords.latitude, lng: p.coords.longitude, precision: p.coords.accuracy }),
-      () => toast('Position perdue — le guidage continue à l\u2019aveugle.'),
+      (error) => {
+        if (!Nav.actif) return;
+        if (error.code === 1) {
+          Nav.arreter();
+          $('trajet').classList.add('on');
+          document.getElementById('scrCarte').classList.add('repere-route-preview');
+          toast('Localisation refusée : autorisez le GPS pour être guidé.');
+        } else {
+          etatSignalGPS('Signal GPS indisponible · position non actualisée', 'error');
+          toast('Signal GPS indisponible. Le suivi attend une nouvelle position.');
+        }
+      },
       { enableHighAccuracy: true, maximumAge: 1000, timeout: 12000 }
     );
   },
@@ -791,6 +850,7 @@ const Nav = {
     if (Nav.veille !== null) { navigator.geolocation.clearWatch(Nav.veille); Nav.veille = null; }
     if ('speechSynthesis' in window) speechSynthesis.cancel();
     Nav.actif = false;
+    etatSignalGPS('Guidage terminé', 'waiting');
     $('consigne').classList.remove('on');
     document.querySelector('#scrCarte .mapwrap').classList.remove('guidage');
     $('carteEtat').classList.remove('guidage');
@@ -818,11 +878,18 @@ const Nav = {
 
   avancer(pos) {
     if (!Nav.actif || !Nav.route) return;
+    // Ignorer un point trop incertain pour ne pas créer de faux virages.
+    if (!Number.isFinite(pos.lat) || !Number.isFinite(pos.lng)) return;
+    if (Number.isFinite(pos.precision) && pos.precision > 80) {
+      etatSignalGPS('Précision GPS faible · attente d’un meilleur signal', 'weak');
+      return;
+    }
     Geo.derniere = pos;
-
-    if (marqueurMoi) map.removeLayer(marqueurMoi);
-    marqueurMoi = L.marker([pos.lat, pos.lng], { icon: carre(15, '#0F766E', true) }).addTo(map);
-    map.setView([pos.lat, pos.lng], Math.max(map.getZoom(), 16), { animate: true });
+    if (marqueurMoi) marqueurMoi.setLatLng([pos.lat, pos.lng]);
+    else marqueurMoi = L.marker([pos.lat, pos.lng], { icon: carre(15, '#0F766E', true) }).addTo(map);
+    if (map.getZoom() < 16) map.setView([pos.lat, pos.lng], 16, { animate: true });
+    else map.panTo([pos.lat, pos.lng], { animate: true, duration: .45 });
+    etatSignalGPS('Suivi GPS actif · position actualisée', 'active');
 
     /* Un point toutes les douze secondes suffit à suivre quelqu'un en direct,
        et ménage la base comme la batterie — un point à chaque relevé GPS (une
@@ -833,6 +900,7 @@ const Nav = {
     }
 
     const pr = Nav.progres(pos);
+    dessinerAvancementGPS(pr.avance);
 
     /* Écart au tracé. Un seul point aberrant ne doit pas déclencher un
        recalcul : il faut trois relevés d'affilée au-delà de soixante mètres. */
