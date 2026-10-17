@@ -116,7 +116,7 @@
   document.addEventListener('pointerdown', (event) => {
     if (!event.target.closest('.chercher, .suggest, .repere-quick-actions')) {
       if (typeof annulerRecherche === 'function') annulerRecherche();
-    else suggest.classList.remove('on');
+      else suggest.classList.remove('on');
     }
   });
 
