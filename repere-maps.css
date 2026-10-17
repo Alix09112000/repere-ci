@@ -556,3 +556,12 @@ body,#app,.scr{background:var(--bg)}
   #trajet .repere-mode-options{gap:5px}
   #trajet .repere-mode-options span{font-size:10px;min-height:44px}
 }
+
+#trajet .repere-route-retry{
+  display:block;align-self:flex-start;padding:7px 10px;
+  font-size:12px;font-weight:750;color:#087F68;
+  border:1px solid #CDE9DB;border-radius:10px;background:#F4FBF7;
+}
+#trajet .repere-route-retry:focus-visible{
+  outline:3px solid #087F68;outline-offset:3px;
+}
