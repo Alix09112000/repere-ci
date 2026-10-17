@@ -27,12 +27,14 @@
 
       <div class="chercher">
         <span class="mark"><img src="logo-icon.svg" alt="Repère CI"/></span>
-        <input id="qDest" placeholder="Où allez-vous ?" autocomplete="off" enterkeyhint="search"/>
+        <input id="qDest" placeholder="Où allez-vous ?" autocomplete="off" enterkeyhint="search"
+          aria-label="Rechercher un lieu ou un GeoCode" aria-controls="suggest" aria-expanded="false"/>
+        <button type="button" class="repere-search-clear" id="btnClearSearch" aria-label="Effacer la recherche" hidden>×</button>
         <button id="btnChercher" aria-label="Chercher">
           <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/></svg>
         </button>
       </div>
-      <div class="suggest" id="suggest"></div>
+      <div class="suggest" id="suggest" role="region" aria-label="Résultats de recherche" aria-live="polite"></div>
 
       <div class="cmds">
         <button class="pos" id="btnRecentrer" aria-label="Ma position">
