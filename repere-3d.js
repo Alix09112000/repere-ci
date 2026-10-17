@@ -12,6 +12,7 @@ const Repere3D = (() => {
   let instance = null, active = false, ready = false, pending = null;
   let syncingFrom3D = false;
   let lastPlaces = [], lastRoute = null, lastPosition = null;
+  let placesVisible = window.RepereLayers?.placesVisible !== false;
   function status(message) { const e = el('repere3dStatus'); if(e)e.textContent=message; }
   function pressed(state) {
     el('repereMap3D')?.setAttribute('aria-pressed',String(state));
@@ -128,6 +129,7 @@ const Repere3D = (() => {
   // la ville : conserver seulement les lieux visibles et suffisamment espacés.
   function renderPlaces() {
     if(!ready || !instance) return;
+    if(!placesVisible) { setGeo('repere-3d-points',VIDE);return; }
     const zoom=instance.getZoom();
     if(zoom<15.5) { setGeo('repere-3d-points',VIDE);return; }
     const center=instance.getCenter();
@@ -156,6 +158,10 @@ const Repere3D = (() => {
       if(features.length>=maximum)break;
     }
     setGeo('repere-3d-points',geojson(features));
+  }
+  function setPlacesVisible(value) {
+    placesVisible = value !== false;
+    renderPlaces();
   }
   function updatePlaces(lieux) {
     lastPlaces=(Array.isArray(lieux)?lieux:[]).filter(x=>
@@ -288,5 +294,5 @@ const Repere3D = (() => {
   }
   setup();
   return Object.freeze({toggle,leave,isActive:()=>active,
-    updatePlaces,updateRoute,updatePosition,syncLeaflet});
+    updatePlaces,updateRoute,updatePosition,syncLeaflet,setPlacesVisible});
 })();
