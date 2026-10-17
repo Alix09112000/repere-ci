@@ -5,7 +5,7 @@ const Repere3D = (() => {
   'use strict';
   const SCRIPT = 'https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js';
   const CSS = 'https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css';
-  const VECTOR_STYLE = 'https://tiles.openfreemap.org/styles/bright';
+  const VECTOR_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
   const BUILDING_TILEJSON = 'https://tiles.openfreemap.org/planet';
   const VIDE = {type:'FeatureCollection',features:[]};
   const el = id => document.getElementById(id);
@@ -65,7 +65,7 @@ const Repere3D = (() => {
       paint:{
         'fill-extrusion-color':[
           'interpolate',['linear'],['coalesce',['get','render_height'],0],
-          0,'#DEE9E6',25,'#ADC9C3',80,'#83ADA7',180,'#6D9996'
+          0,'#E8E9E4',25,'#C9D6D1',80,'#A3BAB5',180,'#829F9A'
         ],
         'fill-extrusion-height':[
           'interpolate',['linear'],['zoom'],15,0,16,
@@ -75,7 +75,7 @@ const Repere3D = (() => {
           'interpolate',['linear'],['zoom'],15,0,16,
           ['coalesce',['get','render_min_height'],0]
         ],
-        'fill-extrusion-opacity':0.84
+        'fill-extrusion-opacity':0.72
       }
     }, firstLabel);
     addSource('repere-3d-parcours',VIDE);
@@ -239,14 +239,14 @@ const Repere3D = (() => {
         el('map3d').hidden=false;
         instance=new maplibregl.Map({
           container:'map3d',style:fond(),center:[c.lng,c.lat],
-          zoom:Math.max(16,map.getZoom()),pitch:50,bearing:-18,
+          zoom:Math.max(16,map.getZoom()),pitch:42,bearing:0,
           maxPitch:75,maxZoom:19,
           canvasContextAttributes:{antialias:true},
           attributionControl:true
         });
         instance.on('load',()=>{
           addLayers();
-          status('Carte vectorielle prête · bâtiments en relief selon les données OSM.');
+          status('Carte vectorielle prête · relief selon les hauteurs disponibles dans OSM.');
           if(active)renderPlaces();
         });
         instance.on('error',e=>{
@@ -278,11 +278,11 @@ const Repere3D = (() => {
   function resetPerspective() {
     if(!instance||!active)return;
     const c=instance.getCenter();
-    instance.easeTo({center:[c.lng,c.lat],pitch:50,bearing:-18,duration:500});
+    instance.easeTo({center:[c.lng,c.lat],pitch:42,bearing:0,duration:500});
   }
   function tilt() {
     if(!instance||!active)return;
-    instance.easeTo({pitch:instance.getPitch()>15?0:50,duration:450});
+    instance.easeTo({pitch:instance.getPitch()>15?0:42,duration:450});
   }
   function setup() {
     el('repereMap3D')?.addEventListener('click',toggle);
