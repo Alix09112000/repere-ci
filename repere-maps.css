@@ -724,3 +724,65 @@ body,#app,.scr{background:var(--bg)}
   #scrCarte .repere-map-style-switch button{font-size:11px;padding:7px 9px}
   #scrCarte .repere-nearby-items{max-height:138px}
 }
+
+
+/* Repère Maps V7 : rendu MapLibre 3D optionnel, sans remplacer Leaflet. */
+#scrCarte #map3d{
+  position:absolute;inset:0;z-index:4;width:100%;height:100%;
+  background:#E6EEF1;touch-action:pan-x pan-y
+}
+#scrCarte #map3d[hidden]{display:none!important}
+#scrCarte .repere-3d-controls{
+  position:absolute;right:16px;top:calc(env(safe-area-inset-top) + 211px);
+  z-index:548;display:flex;gap:7px;
+}
+#scrCarte .repere-3d-controls[hidden]{display:none!important}
+#scrCarte .repere-3d-controls button{
+  display:grid;place-items:center;min-width:46px;min-height:46px;
+  background:#fff;color:#087F68;border:1px solid #DDEBE4;
+  border-radius:15px;box-shadow:0 5px 22px rgba(12,56,42,.15);
+  font-size:23px;font-weight:700
+}
+#scrCarte .repere-3d-controls button:focus-visible{
+  outline:3px solid #087F68;outline-offset:2px
+}
+#scrCarte .repere-3d-status{
+  position:absolute;z-index:525;left:15px;
+  bottom:calc(var(--repere-sheet-h) + 15px);
+  max-width:min(340px,calc(100% - 105px));
+  border:1px solid rgba(8,127,104,.16);border-radius:13px;
+  padding:8px 12px;background:rgba(255,255,255,.94);
+  font-size:11px;font-weight:650;line-height:1.45;
+  color:#30594B;box-shadow:0 5px 22px rgba(12,56,42,.11);
+  display:none;pointer-events:none
+}
+#scrCarte.repere-3d-on .repere-3d-status:not(:empty){display:block}
+#scrCarte.repere-route-preview .repere-3d-status{bottom:90px}
+#scrCarte.repere-guiding .repere-3d-status{bottom:16px}
+#scrCarte.repere-guiding.repere-3d-on .repere-map-style-switch{display:flex}
+#scrCarte #map3d .maplibregl-ctrl-bottom-right{
+  bottom:calc(var(--repere-sheet-h) + 1px)
+}
+#scrCarte.repere-route-preview #map3d .maplibregl-ctrl-bottom-right,
+#scrCarte.repere-guiding #map3d .maplibregl-ctrl-bottom-right{bottom:5px}
+#scrCarte #map3d .maplibregl-control-container{
+  font-size:11px
+}
+#scrCarte.repere-3d-on .repere-map-style-switch{
+  box-shadow:0 9px 28px rgba(6,57,44,.22)
+}
+@media(min-width:900px){
+  #scrCarte .repere-3d-controls{right:24px;top:166px}
+  #scrCarte .repere-3d-status{bottom:62px;left:auto;right:24px}
+  #scrCarte #map3d .maplibregl-ctrl-bottom-right{bottom:10px}
+}
+@media(max-width:420px){
+  #scrCarte .repere-3d-controls{
+    top:calc(env(safe-area-inset-top) + 202px);right:10px
+  }
+  #scrCarte .repere-3d-controls button{min-width:42px;min-height:42px}
+  #scrCarte .repere-3d-status{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  #scrCarte .repere-3d-controls button{transition:none}
+}

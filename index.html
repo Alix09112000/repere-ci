@@ -24,6 +24,7 @@
   <section class="scr on" id="scrCarte" data-screen-label="01 Accueil">
     <div class="mapwrap">
       <div id="map"></div>
+      <div id="map3d" hidden aria-label="Carte 3D interactive"></div>
 
       <div class="chercher">
         <span class="mark"><img src="logo-icon.svg" alt="Repère CI"/></span>
@@ -38,7 +39,14 @@
       <div class="repere-map-style-switch" role="group" aria-label="Style de la carte">
         <button type="button" id="repereMapPlan" aria-pressed="true">Plan</button>
         <button type="button" id="repereMapDetail" aria-pressed="false">Repères</button>
+        <button type="button" id="repereMap3D" aria-pressed="false" aria-label="Activer ou désactiver la carte 3D">3D</button>
       </div>
+
+      <div id="repere3dControls" class="repere-3d-controls" hidden aria-label="Commandes de la carte 3D">
+        <button type="button" id="repere3dReset" aria-label="Réorienter la vue 3D" title="Réorienter">⟳</button>
+        <button type="button" id="repere3dTilt" aria-label="Changer l'inclinaison de la carte" title="Incliner">↗</button>
+      </div>
+      <p id="repere3dStatus" class="repere-3d-status" role="status" aria-live="polite"></p>
 
       <div class="cmds">
         <button class="pos" id="btnRecentrer" aria-label="Ma position">
@@ -404,8 +412,10 @@
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="repere-routing.js"></script>
 <script src="repere-poi.js"></script>
+<script src="repere-3d-data.js"></script>
 <script src="repere-app.js"></script>
 <script src="repere-maps.js"></script>
+<script src="repere-3d.js"></script>
 <script>
   // Coque hors-ligne / installation sur l'écran d'accueil. N'importe jamais
   // les réponses de l'API — voir sw.js.

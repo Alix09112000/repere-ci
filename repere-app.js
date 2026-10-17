@@ -266,6 +266,7 @@ async function chargerLieux() {
   chargeEnCours = cle;
   if (!carteDansCI()) {
     coucheLieux.clearLayers();
+    if (typeof Repere3D !== 'undefined') Repere3D.updatePlaces([]);
     listeRepereAutour([], 'Les lieux référencés sont actuellement disponibles en Côte d’Ivoire.');
     S.nbLieux = 0;
     majEtat();
@@ -298,10 +299,12 @@ async function chargerLieux() {
       marqueur.addTo(coucheLieux);
     });
     listeRepereAutour(lieux);
+    if (typeof Repere3D !== 'undefined') Repere3D.updatePlaces(lieux);
     S.nbLieux = lieux.length;
   } catch (e) {
     if (chargeEnCours !== cle) return;
     S.nbLieux = null;
+    if (typeof Repere3D !== 'undefined') Repere3D.updatePlaces([]);
     listeRepereAutour(null, 'Impossible de charger les lieux. Vérifiez la connexion ou réessayez.');
   }
   majEtat();
@@ -514,13 +517,17 @@ function majAlerteProche() {
   el.appendChild(b);
 }
 
-map.on('moveend', () => { chargerLieux(); chargerAlertes(); });
+map.on('moveend', () => {
+  chargerLieux(); chargerAlertes();
+  if (typeof Repere3D !== 'undefined') Repere3D.syncLeaflet();
+});
 
 /* ═══ MA POSITION ═══ */
 function localiser(onOk, onErr) {
   Geo.obtenir((p) => {
     if (marqueurMoi) map.removeLayer(marqueurMoi);
     marqueurMoi = L.marker([p.lat, p.lng], { icon: carre(15, '#0F766E', true) }).addTo(map);
+    if (typeof Repere3D !== 'undefined') Repere3D.updatePosition(p,false);
     onOk(p);
   }, onErr);
 }
@@ -767,6 +774,7 @@ function afficherRoute(route, dest, nom, enGuidage) {
 
   Nav.route = { ligne: ligne, etapes: etapes, dest: dest, nom: nom, mode: lireOptionsTrajet().mode };
   Nav.preparer();
+  if (typeof Repere3D !== 'undefined') Repere3D.updateRoute(Nav.route);
 }
 
 /* Comparaison accessible : sélection d'une route sans appel réseau supplémentaire. */
@@ -923,6 +931,7 @@ async function tracerTrajet(dest, nom) {
       if (marqueurDest) { map.removeLayer(marqueurDest); marqueurDest = null; }
       if (!map.hasLayer(coucheLieux)) coucheLieux.addTo(map);
       Nav.route = null;
+      if (typeof Repere3D !== 'undefined') Repere3D.updateRoute(null);
       $('trajet').classList.add('on');
       document.getElementById('scrCarte').classList.add('repere-route-preview');
       $('feuilleBas').style.display = 'none';
@@ -950,6 +959,7 @@ function finirTrajet() {
   coucheTrajet.clearLayers();
   coucheAlternatives.clearLayers();
   coucheParcourue = null;
+  if (typeof Repere3D !== 'undefined') Repere3D.updateRoute(null);
   if (!map.hasLayer(coucheLieux)) coucheLieux.addTo(map);
   if (marqueurDest) { map.removeLayer(marqueurDest); marqueurDest = null; }
   if (Nav.suiviCode) {
@@ -1165,6 +1175,7 @@ const Nav = {
       return;
     }
     Geo.derniere = pos;
+    if (typeof Repere3D !== 'undefined') Repere3D.updatePosition(pos);
     if (marqueurMoi) marqueurMoi.setLatLng([pos.lat, pos.lng]);
     else marqueurMoi = L.marker([pos.lat, pos.lng], { icon: carre(15, '#0F766E', true) }).addTo(map);
     if (map.getZoom() < 16) map.setView([pos.lat, pos.lng], 16, { animate: true });
