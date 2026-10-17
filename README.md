@@ -121,37 +121,35 @@ Le premier et le dernier sont les plus utiles : sans compte réel, un
 contributeur perd ses points en changeant de téléphone, ce qui vide le
 classement de son sens.
 
-## Repère Maps V7 — mode 3D facultatif
+## Repère Maps V7.1 — 3D vectorielle plus lisible
 
-Le bouton **3D** ouvre MapLibre GL JS en WebGL, avec une vue inclinée
-et orientable. La carte principale Leaflet **2D reste fonctionnelle** et
-est restaurée immédiatement via Plan ou Repères. Les parcours voiture,
-vélo et marche et les points de repère peuvent être visualisés dans la
-vue 3D, sans remplacer les fonctions actuelles de guidage GPS.
+La V7 d'origine inclinait des **tuiles d'images 2D**, produisait une
+surabondance de marqueurs et chargeait lentement quelques bâtiments à
+partir d'Overpass. La V7.1 a remplacé ce rendu par un **véritable fond
+de carte vectoriel OpenFreeMap Bright** avec MapLibre GL JS. Les routes
+et les libellés sont rendus comme des objets vectoriels.
 
-Les volumes correspondent aux **empreintes de bâtiments réellement
-cartographiées dans OpenStreetMap**. Quand les attributs `height` ou
-`building:levels` n'existent pas, les hauteurs sont **estimées uniquement
-pour la visualisation** (3 m par étage connu, sinon 7 m), jamais
-présentées comme des mesures de bâtiment. Il ne s'agit **ni de
-photographies aériennes ni d'une imagerie satellite 3D**, ni d'un modèle
-de terrain photogrammétrique. Des quartiers peuvent manquer de données.
+Les bâtiments en relief viennent de la couche vectorielle `building`
+d'OpenFreeMap, qui exploite les attributs `render_height` et
+`render_min_height` dérivés des données OpenStreetMap. Ils peuvent
+être incomplets ou absents dans certains quartiers d'Abidjan. Ce mode
+n'est **ni de l'imagerie satellite, ni une maquette photoréaliste**.
 
-La bibliothèque MapLibre est chargée uniquement lors du premier clic sur
-3D. Les bâtiments sont interrogés **uniquement en 3D** et seulement à
-partir du zoom 15, dans une emprise volontairement limitée autour du
-centre de la carte (~400 m). Le centre demandé est transmis à l'API
-Overpass publique ; les réponses sont limitées à 180 bâtiments, le
-chargement est espacé d'au moins 45 secondes, et un délai de 13 secondes
-arrête les requêtes trop longues. Aucune requête massive, aucun
-téléchargement hors connexion. En cas d'indisponibilité des données ou
-de WebGL, le plan 2D demeure disponible.
+En mode 3D, les points d'intérêt de Repère CI sont limités à **12 repères
+visibles au zoom moyen et 22 au zoom rapproché**, avec espacement et
+noms seulement à fort zoom. L'objectif est de montrer les rues avant
+les repères. Cliquer sur un point ouvre toujours sa fiche.
 
-**Important avant lancement commercial** : OpenStreetMap et Overpass
-sont des services communautaires sans garantie de disponibilité. Le
-fond de carte respecte l'attribution OSM et les règles de cache des
-tuiles. Pour une audience importante, utiliser un fournisseur de tuiles
-et de bâtiments adapté, ou héberger les données via un backend dédié.
+La vue 3D se charge uniquement après clic sur **3D**, et la carte 2D
+Leaflet demeure la base des itinéraires et du guidage. Le bouton Plan
+ou Repères permet de revenir à la 2D.
+
+**Licences et infrastructure** : le fond et les bâtiments vectoriels
+sont fournis par OpenFreeMap / OpenMapTiles avec des données
+OpenStreetMap et attribution dans MapLibre. La source publique est sans
+clé API, mais sans garantie contractuelle de disponibilité ; une
+solution contractuelle ou auto-hébergée reste préférable à grande
+échelle. Consulter https://openfreemap.org/ et ses conditions.
 
 ## Carte enrichie et repères locaux — V6
 
