@@ -1,14 +1,9 @@
-/* Repère CI — service worker minimal.
-   Un seul but : que l'app s'ouvre même sur une connexion lente ou coupée,
-   en servant la coque (HTML/CSS/JS/icône) depuis le cache.
-
-   Ne met JAMAIS en cache une réponse de l'API GeoDeliver (geocode, reverse,
-   signalements, lieux...) : ces données changent à chaque appel et doivent
-   toujours venir du réseau. Seule la coque statique de repere-ci est
-   concernée — pas les appels vers onrender.com. */
-
-const CACHE = 'repere-ci-coque-v5';
-
+/* Repère CI — cache PWA V6.
+   Objectif : afficher les mises à jour dès qu'une connexion est disponible,
+   et conserver un secours hors ligne pour les seuls fichiers statiques.
+   Ni les appels API ni les données personnelles ne sont stockés ici. */
+const CACHE = 'repere-ci-coque-v6';
+const PREFIXE_CACHE = 'repere-ci-coque-';
 const FICHIERS_COQUE = [
   './',
   './index.html',
@@ -16,52 +11,60 @@ const FICHIERS_COQUE = [
   './suivi.html',
   './repere.css',
   './repere-maps.css',
-  './repere-maps.js',
   './repere-api.js',
   './repere-app.js',
+  './repere-maps.js',
   './manifest.json',
   './logo-icon.svg',
   './logo-icon-maskable.svg',
 ];
-
+const CHEMINS_COQUE = new Set(
+  FICHIERS_COQUE.map((fichier) => new URL(fichier, self.registration.scope).pathname)
+);
 self.addEventListener('install', (evt) => {
   evt.waitUntil(
     caches.open(CACHE).then((cache) => cache.addAll(FICHIERS_COQUE))
   );
   self.skipWaiting();
 });
-
 self.addEventListener('activate', (evt) => {
-  evt.waitUntil(
-    caches.keys().then((noms) =>
-      Promise.all(noms.filter((n) => n !== CACHE).map((n) => caches.delete(n)))
-    )
-  );
-  self.clients.claim();
+  evt.waitUntil((async () => {
+    const noms = await caches.keys();
+    // Les caches d'autres projets GitHub Pages partagent ce domaine.
+    await Promise.all(noms
+      .filter((nom) => nom.startsWith(PREFIXE_CACHE) && nom !== CACHE)
+      .map((nom) => caches.delete(nom)));
+    await self.clients.claim();
+  })());
 });
-
 self.addEventListener('fetch', (evt) => {
   const url = new URL(evt.request.url);
-
-  // Jamais l'API : toujours réseau, jamais de cache pour ces réponses.
-  if (url.origin !== self.location.origin) {
-    return; // laisse la requête partir normalement (réseau)
+  if (evt.request.method !== 'GET' ||
+      url.origin !== self.location.origin ||
+      !CHEMINS_COQUE.has(url.pathname)) {
+    return; // API, tuiles cartographiques et autres URLs : réseau normal.
   }
 
-  // Coque statique du même origine : cache d'abord, réseau en secours,
-  // et on rafraîchit le cache quand le réseau répond.
-  evt.respondWith(
-    caches.match(evt.request).then((reponseEnCache) => {
-      const reponseReseau = fetch(evt.request)
-        .then((reponse) => {
-          if (reponse && reponse.ok) {
-            const copie = reponse.clone();
-            caches.open(CACHE).then((cache) => cache.put(evt.request, copie));
-          }
-          return reponse;
-        })
-        .catch(() => reponseEnCache);
-      return reponseEnCache || reponseReseau;
-    })
-  );
+  evt.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    // L'URL canonique ignore les paramètres de suivi (ex. ?utm_source).
+    const cleCache = new Request(url.origin + url.pathname);
+    try {
+      // Network-first : n'affiche plus une ancienne page si le réseau répond.
+      const reponse = await fetch(evt.request, { cache: 'no-cache' });
+      if (reponse.ok) {
+        await cache.put(cleCache, reponse.clone()).catch(() => {});
+      }
+      return reponse;
+    } catch (_) {
+      // Mode hors ligne : la coque existante reste accessible.
+      const ancienne = await cache.match(cleCache);
+      if (ancienne) return ancienne;
+      if (evt.request.mode === 'navigate') {
+        const accueil = await cache.match('./index.html');
+        if (accueil) return accueil;
+      }
+      return Response.error();
+    }
+  })());
 });
