@@ -989,7 +989,7 @@ $('qDest').addEventListener('keydown', (e) => {
   }
 });
 $('suggest').addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { fermerSuggestions(); $('qDest').focus(); return; }
+  if (e.key === 'Escape') { annulerRecherche(); $('qDest').focus(); return; }
   if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
   const boutons = Array.from($('suggest').querySelectorAll('button.repere-result-item'));
   const indice = boutons.indexOf(document.activeElement);
