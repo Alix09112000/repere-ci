@@ -565,3 +565,67 @@ body,#app,.scr{background:var(--bg)}
 #trajet .repere-route-retry:focus-visible{
   outline:3px solid #087F68;outline-offset:3px;
 }
+
+
+/* Repère Maps V5.1 — itinéraires automatiques, tracés typés et options allégées. */
+#trajet .repere-route-visual-legend {
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px;
+  padding:0 20px 13px;font-size:11px;font-weight:750;
+  color:#385C50;line-height:1.4
+}
+#trajet .repere-route-legend-line {
+  width:46px;height:6px;border-radius:999px;flex:none;
+  background:#087F68;box-shadow:0 0 0 2px #fff;
+}
+#trajet .repere-route-auto-pill {
+  margin-left:auto;padding:4px 8px;border-radius:999px;
+  font-size:10px;font-weight:800;color:#087F68;background:#E1F5EA;
+}
+#trajet[data-mode="velo"] .repere-route-legend-line {
+  background:repeating-linear-gradient(90deg,#1877D2 0px,#1877D2 14px,transparent 14px,transparent 22px)
+}
+#trajet[data-mode="pied"] .repere-route-legend-line {
+  background:radial-gradient(circle at 4px 3px,#F07A28 0 3px,transparent 3.5px) 0 0/12px 6px repeat-x;
+  box-shadow:none
+}
+#trajet[data-mode="velo"] .repere-route-auto-pill {
+  color:#12518A;background:#E6F1FC
+}
+#trajet[data-mode="pied"] .repere-route-auto-pill {
+  color:#A5501B;background:#FFF0E4
+}
+#trajet[data-mode="velo"] .repere-route-metric strong,
+#trajet[data-mode="velo"] .repere-route-steps-toggle {color:#1877D2}
+#trajet[data-mode="pied"] .repere-route-metric strong,
+#trajet[data-mode="pied"] .repere-route-steps-toggle {color:#C5681B}
+#trajet[data-mode="velo"] .repere-route-option.is-selected{
+  border-color:#1877D2;background:#EBF4FF
+}
+#trajet[data-mode="pied"] .repere-route-option.is-selected{
+  border-color:#ED7D2B;background:#FFF3EB
+}
+#trajet .repere-road-options {
+  display:block;padding:0 10px 10px;border:1px solid #E5F0E9;
+  background:#F6FAF8;border-radius:13px
+}
+#trajet .repere-road-options summary {
+  display:list-item;cursor:pointer;list-style-position:inside;
+  min-height:43px;padding:13px 0 8px;color:#45685A;font-weight:750;
+  font-size:12px
+}
+#trajet .repere-road-options summary:focus-visible {
+  outline:3px solid #087F68;outline-offset:3px;border-radius:5px
+}
+#trajet .repere-road-options:not([open]) > :not(summary) {display:none!important}
+#trajet .repere-road-options[open] {
+  display:flex;flex-direction:column;gap:11px
+}
+/* Les points se distinguent visuellement d'un tracé routier : vélo en bleu,
+   marche en orange, voiture continue en vert. */
+.leaflet-overlay-pane path.repere-route-velo {stroke-linecap:round}
+.leaflet-overlay-pane path.repere-route-pied {stroke-linecap:round}
+.leaflet-overlay-pane path.repere-route-alternative {pointer-events:none;opacity:.34}
+@media(max-width:400px){
+  #trajet .repere-route-visual-legend {padding-left:12px;padding-right:12px}
+  #trajet .repere-route-auto-pill{margin-left:0}
+}
