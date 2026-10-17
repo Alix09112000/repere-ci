@@ -210,12 +210,98 @@ $('carteEtat').addEventListener('click', () => {
   chargerAlertes();
 });
 
+/* Une fiche unique sert aux résultats de recherche et aux repères sur la carte.
+   Aucune donnée provenant de l'API n'est interpolée en HTML. */
+function coordonneesLieu(l) {
+  const lat = Number(l && l.lat), lng = Number(l && l.lng);
+  return Number.isFinite(lat) && Number.isFinite(lng) &&
+    Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat, lng } : null;
+}
+
+function ouvrirFicheLieu(l) {
+  const nom = String(l.nom || l.geocode || 'Lieu sans nom');
+  const coord = coordonneesLieu(l);
+  const corps = ouvrirFeuille(nom);
+  const bloc = document.createElement('div');
+  bloc.className = 'repere-place-card';
+  const type = document.createElement('span');
+  type.className = 'repere-place-type';
+  type.textContent = String(l.libelle || l.etiquette || 'Repère local');
+  bloc.appendChild(type);
+
+  const details = [l.commune, l.quartier, l.ville]
+    .filter(Boolean).map(String).filter((v, i, all) => all.indexOf(v) === i);
+  if (Number.isFinite(Number(l.distance_m)) && Number(l.distance_m) >= 0) {
+    details.push('À ' + fmt.distance(Number(l.distance_m)));
+  }
+  if (details.length) {
+    const info = document.createElement('p');
+    info.className = 'repere-place-description';
+    info.textContent = details.join(' · ');
+    bloc.appendChild(info);
+  }
+  if (l.geocode) {
+    const code = document.createElement('div');
+    code.className = 'repere-place-code';
+    const identifier = document.createElement('span');
+    identifier.textContent = 'GeoCode';
+    const value = document.createElement('strong');
+    value.textContent = String(l.geocode);
+    code.append(identifier, value);
+    bloc.appendChild(code);
+  }
+  corps.appendChild(bloc);
+
+  const boutons = document.createElement('div');
+  boutons.className = 'repere-place-actions';
+  const bouton = (texte, style, action) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'repere-place-action ' + style;
+    b.textContent = texte;
+    b.addEventListener('click', action);
+    boutons.appendChild(b);
+    return b;
+  };
+  const trajet = bouton('Itinéraire', 'primaire', () => {
+    if (!coord) return toast('Coordonnées de ce lieu indisponibles.');
+    feuille.classList.remove('on');
+    window.allerVers(coord.lat, coord.lng, nom);
+  });
+  if (!coord) trajet.disabled = true;
+  const carte = bouton('Voir sur la carte', 'secondaire', () => {
+    if (!coord) return toast('Coordonnées de ce lieu indisponibles.');
+    feuille.classList.remove('on');
+    allerA('scrCarte');
+    map.setView([coord.lat, coord.lng], 17, { animate: true });
+  });
+  if (!coord) carte.disabled = true;
+  if (l.geocode) bouton('Copier le GeoCode', 'secondaire', async () => {
+    try {
+      await navigator.clipboard.writeText(String(l.geocode));
+      toast('GeoCode copié.');
+    } catch (_) { toast('Copie indisponible sur cet appareil.'); }
+  });
+  corps.appendChild(boutons);
+}
+
 function popupLieu(l) {
-  const nom = String(l.nom).replace(/'/g, '\u2019');
-  return '<strong>' + nom + '</strong><br/>' + l.libelle +
-    (l.geocode ? '<br/><span class="mn" style="font-size:12px">' + l.geocode + '</span>' : '') +
-    '<br/><button class="chip acc" style="margin-top:8px" onclick="allerVers(' +
-    l.lat + ',' + l.lng + ',&quot;' + nom + '&quot;)">M\u2019y rendre</button>';
+  const conteneur = document.createElement('div');
+  conteneur.className = 'repere-map-popup';
+  const titre = document.createElement('strong');
+  titre.textContent = String(l.nom || 'Lieu');
+  const description = document.createElement('span');
+  description.textContent = String(l.libelle || 'Repère local');
+  const action = document.createElement('button');
+  action.type = 'button';
+  action.className = 'chip acc';
+  action.textContent = 'Voir la fiche du lieu';
+  action.addEventListener('click', () => {
+    map.closePopup();
+    ouvrirFicheLieu(l);
+  });
+  conteneur.append(titre, description, action);
+  return conteneur;
 }
 
 /* ═══ SIGNALEMENTS SUR LA CARTE ═══ */
@@ -781,69 +867,131 @@ $('btnVoix').addEventListener('click', () => {
 majBoutonVoix();
 
 /* ═══ RECHERCHE DE DESTINATION ═══ */
+/* Les réponses tardives ne doivent jamais remplacer la nouvelle recherche. */
+let numeroRecherche = 0;
+let minuteur;
+function afficherSuggestions() {
+  $('suggest').classList.add('on');
+  $('qDest').setAttribute('aria-expanded', 'true');
+}
+function fermerSuggestions() {
+  $('suggest').classList.remove('on');
+  $('qDest').setAttribute('aria-expanded', 'false');
+}
+function etatRecherche(message) {
+  const s = $('suggest');
+  const note = document.createElement('p');
+  note.className = 'repere-search-state';
+  note.textContent = message;
+  s.replaceChildren(note);
+  afficherSuggestions();
+}
 function proposer(items) {
   const s = $('suggest');
-  s.innerHTML = '';
+  s.replaceChildren();
   if (!items.length) {
-    s.innerHTML = '<div class="empty">Rien trouvé sous ce nom.</div>';
-    s.classList.add('on');
+    etatRecherche('Aucun lieu trouvé. Essayez un nom de quartier ou un GeoCode.');
     return;
   }
+  const entete = document.createElement('div');
+  entete.className = 'repere-results-heading';
+  entete.textContent = items.length + ' résultat' + (items.length > 1 ? 's' : '');
+  s.appendChild(entete);
   items.forEach((it) => {
     const b = document.createElement('button');
-    b.innerHTML = '<span class="chip dim">' + (it.etiquette || 'Lieu') + '</span>' +
-      '<span class="grow"><span class="nm">' + it.nom + '</span>' +
-      (it.sous ? '<span class="sub">' + it.sous + '</span>' : '') + '</span>';
+    b.type = 'button';
+    b.className = 'repere-result-item';
+    const picto = document.createElement('span');
+    picto.className = 'repere-result-icon';
+    picto.setAttribute('aria-hidden', 'true');
+    picto.textContent = '⌖';
+    const corps = document.createElement('span');
+    corps.className = 'grow';
+    const titre = document.createElement('span');
+    titre.className = 'nm';
+    titre.textContent = String(it.nom || 'Lieu');
+    const sous = document.createElement('span');
+    sous.className = 'sub';
+    sous.textContent = String(it.sous || it.etiquette || 'Repère local');
+    corps.append(titre, sous);
+    const fleche = document.createElement('span');
+    fleche.className = 'repere-result-arrow';
+    fleche.setAttribute('aria-hidden', 'true');
+    fleche.textContent = '›';
+    b.append(picto, corps, fleche);
     b.addEventListener('click', () => {
-      $('qDest').value = it.nom;
-      s.classList.remove('on');
-      tracerTrajet(it, it.nom);
+      $('qDest').value = String(it.nom || '');
+      fermerSuggestions();
+      $('qDest').blur();
+      ouvrirFicheLieu(it);
     });
     s.appendChild(b);
   });
-  s.classList.add('on');
+  afficherSuggestions();
 }
 
 async function chercherDestination() {
+  clearTimeout(minuteur);
   const q = $('qDest').value.trim();
-  if (q.length < 2) return;
+  const demande = ++numeroRecherche;
+  if (q.length < 2) { fermerSuggestions(); return; }
+  etatRecherche('Recherche des lieux…');
 
-  /* Un GeoCode d'abord : c'est ce que les gens reçoivent par WhatsApp, et ce
-     qu'aucune autre application de navigation ne sait lire. */
   if (RE_GEOCODE.test(q)) {
     try {
       const d = await Api.decoder(q);
+      if (demande !== numeroRecherche || $('qDest').value.trim() !== q) return;
       return proposer([{
-        nom: d.geocode, etiquette: 'Repère',
-        sous: (d.quartier || '') + (d.ville ? ', ' + d.ville : '') +
-              (d.occupant ? ' — occupant ' + d.occupant : ''),
-        lat: d.lat, lng: d.lng
+        nom: d.geocode || q, geocode: d.geocode || q, etiquette: 'Repère',
+        sous: [d.quartier, d.ville].filter(Boolean).join(', '),
+        quartier: d.quartier, ville: d.ville, lat: d.lat, lng: d.lng
       }]);
-    } catch (e) { toast(e.message || 'Code non reconnu.'); }
+    } catch (e) {
+      if (demande !== numeroRecherche) return;
+      etatRecherche('GeoCode non reconnu. Vérifiez le code et réessayez.');
+      return;
+    }
   }
-
   try {
     const d = await Api.lieux(q, 12, Geo.derniere);
+    if (demande !== numeroRecherche || $('qDest').value.trim() !== q) return;
     proposer((d.lieux || []).map((l) => ({
-      nom: l.nom, etiquette: l.libelle,
-      /* La distance est le renseignement décisif : elle évite de lancer un
-         trajet de soixante kilomètres en croyant viser le quartier d'à côté. */
+      nom: l.nom, etiquette: l.libelle, libelle: l.libelle,
       sous: [l.libelle, l.commune, l.distance_m != null ? fmt.distance(l.distance_m) : null]
         .filter(Boolean).join(' · '),
-      lat: l.lat, lng: l.lng
+      commune: l.commune, quartier: l.quartier, ville: l.ville,
+      geocode: l.geocode, distance_m: l.distance_m, lat: l.lat, lng: l.lng
     })));
-  } catch (e) { toast('Recherche indisponible.'); }
+  } catch (e) {
+    if (demande !== numeroRecherche) return;
+    etatRecherche('La recherche est indisponible. Vérifiez votre connexion puis réessayez.');
+  }
 }
 
-let minuteur;
 $('qDest').addEventListener('input', () => {
+  ++numeroRecherche;
   clearTimeout(minuteur);
-  if ($('qDest').value.trim().length < 2) { $('suggest').classList.remove('on'); return; }
-  minuteur = setTimeout(chercherDestination, 350);
+  const q = $('qDest').value.trim();
+  if (q.length < 2) { fermerSuggestions(); return; }
+  minuteur = setTimeout(chercherDestination, 320);
 });
 $('btnChercher').addEventListener('click', chercherDestination);
 $('qDest').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') { e.preventDefault(); $('qDest').blur(); chercherDestination(); }
+  if (e.key === 'ArrowDown') {
+    const premier = $('suggest').querySelector('button.repere-result-item');
+    if (premier) { e.preventDefault(); premier.focus(); }
+  }
+});
+$('suggest').addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { fermerSuggestions(); $('qDest').focus(); return; }
+  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+  const boutons = Array.from($('suggest').querySelectorAll('button.repere-result-item'));
+  const indice = boutons.indexOf(document.activeElement);
+  if (indice < 0) return;
+  e.preventDefault();
+  if (e.key === 'ArrowUp' && indice === 0) $('qDest').focus();
+  else boutons[(indice + (e.key === 'ArrowDown' ? 1 : -1) + boutons.length) % boutons.length].focus();
 });
 
 /* Appui long sur la carte : y aller sans rien taper. */
