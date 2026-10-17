@@ -51,7 +51,7 @@
       closeLayers(false);
     }
   });
-  for (const id of ['repereMapPlan','repereMapDetail','repereMapSatellite','repereMap3D']) {
+  for (const id of ['repereMapPlan','repereMapDetail','repereMap3D']) {
     document.getElementById(id)?.addEventListener('click',()=>closeLayers(false));
   }
 
