@@ -20,7 +20,11 @@
 <link rel="stylesheet" href="repere-v8.css"/>
 <link rel="stylesheet" href="repere-v8-2.css"/>
 <link rel="stylesheet" href="repere-refonte.css"/>
-<style>#app .tabs>a.repere-contribuer-tab{display:flex;flex:1;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-decoration:none;color:#6f8188;font:inherit;font-weight:650;font-size:12px;cursor:pointer}#app .tabs>a.repere-contribuer-tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}#app .tabs>a.repere-contribuer-tab:focus-visible{outline:2px solid #087b58;outline-offset:-3px}</style></head>
+<style>#app .tabs>a.repere-contribuer-tab{display:flex;flex:1;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-decoration:none;color:#6f8188;font:inherit;font-weight:650;font-size:12px;cursor:pointer}#app .tabs>a.repere-contribuer-tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}#app .tabs>a.repere-contribuer-tab:focus-visible{outline:2px solid #087b58;outline-offset:-3px}</style><style>
+#scrContribution{background:#f3f7f6;overflow:hidden}
+#repereContributionFrame{display:block;width:100%;height:100%;border:0;background:#f3f7f6}
+#tabs button[data-scr="scrContribution"] svg{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+</style></head>
 <body>
 <div id="app">
 
@@ -379,6 +383,11 @@
     </div>
   </section>
 
+  <!-- ═══════════ CONTRIBUTION INTÉGRÉE ═══════════ -->
+  <section class="scr" id="scrContribution" data-screen-label="Contribuer" aria-label="Proposer un lieu public">
+    <iframe id="repereContributionFrame" title="Ajouter un lieu — RepèreMaps Afrique de l’Ouest" loading="lazy" src="preview/contribuer.html?embedded=1"></iframe>
+  </section>
+
   <!-- ═══════════ ONGLETS ═══════════ -->
   <nav class="tabs" id="tabs">
     <button class="on" data-scr="scrCarte">
@@ -387,9 +396,9 @@
     <button data-scr="scrPartager">
       <svg viewBox="0 0 24 24"><path d="M4 12v8h16v-8"/><path d="M12 3v11M8 7l4-4 4 4"/></svg><span>Trajets</span>
     </button>
-    <a class="repere-contribuer-tab" href="/repere-ci/preview/contribuer.html" aria-label="Contribuer : ajouter un lieu public">
+    <button type="button" data-scr="scrContribution" aria-label="Contribuer : ajouter un lieu public">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg><span>Contribuer</span>
-    </a>
+    </button>
     <button data-scr="scrProfil">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profil</span>
     </button>
