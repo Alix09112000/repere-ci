@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="repere-v8.css"/>
 <link rel="stylesheet" href="repere-v8-2.css"/>
 <link rel="stylesheet" href="repere-refonte.css"/>
-</head>
+<style>#app .tabs>a.repere-contribuer-tab{display:flex;flex:1;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-decoration:none;color:#6f8188;font:inherit;font-weight:650;font-size:12px;cursor:pointer}#app .tabs>a.repere-contribuer-tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}#app .tabs>a.repere-contribuer-tab:focus-visible{outline:2px solid #087b58;outline-offset:-3px}</style></head>
 <body>
 <div id="app">
 
@@ -387,9 +387,9 @@
     <button data-scr="scrPartager">
       <svg viewBox="0 0 24 24"><path d="M4 12v8h16v-8"/><path d="M12 3v11M8 7l4-4 4 4"/></svg><span>Trajets</span>
     </button>
-    <button data-scr="scrSignaler">
-      <svg viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4"/></svg><span>Contribuer</span>
-    </button>
+    <a class="repere-contribuer-tab" href="/repere-ci/preview/contribuer.html" aria-label="Contribuer : ajouter un lieu public">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg><span>Contribuer</span>
+    </a>
     <button data-scr="scrProfil">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profil</span>
     </button>
@@ -513,7 +513,7 @@ route?.addEventListener('click',()=>{const field=document.getElementById('qDest'
 sat?.addEventListener('click',()=>document.getElementById('repereLayersToggle')?.click());
 const tabs=document.querySelectorAll('#tabs button');
 if(tabs[1])tabs[1].addEventListener('click',(event)=>{event.preventDefault();event.stopImmediatePropagation();document.getElementById('reperePreviewRoute')?.click();},true);
-if(tabs[2])tabs[2].addEventListener('click',(event)=>{event.preventDefault();event.stopImmediatePropagation();window.location.href='/repere-ci/preview/contribuer.html';},true);
+/* Contribution uses a real navigation link; no click interception. */
 })();
 </script>
 
