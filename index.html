@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="Repère CI"/>
+<meta name="apple-mobile-web-app-title" content="RepèreMaps"/>
 <meta name="theme-color" content="#F5F8F9"/>
-<meta name="description" content="Repère CI — une adresse qui se dit, pas des coordonnées. Partage ta position, navigue, signale la route."/>
+<meta name="description" content="RepèreMaps — explorez les lieux, commerces, services et itinéraires en Afrique de l’Ouest."/>
 <link rel="manifest" href="manifest.json"/>
 <link rel="apple-touch-icon" href="logo-icon.svg"/>
 <link rel="icon" href="logo-icon.svg"/>
-<title>Repère CI</title>
+<title>RepèreMaps — Afrique de l’Ouest</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
 <link rel="stylesheet" href="repere.css"/>
@@ -33,8 +34,8 @@
         <div class="repere-brand">
           <span class="repere-brand-icon"><img src="logo-icon.svg" alt=""/></span>
           <span class="repere-brand-copy">
-            <strong>Repère Maps</strong>
-            <small>Explorez la Côte d’Ivoire</small>
+            <strong>RepèreMaps</strong>
+            <small>AFRIQUE DE L’OUEST</small>
           </span>
         </div>
         <button type="button" id="repereLayersToggle" class="repere-layers-trigger"
@@ -48,7 +49,7 @@
         <span class="mark" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.8 4.8"/></svg>
         </span>
-        <input id="qDest" placeholder="Où allez-vous ?" autocomplete="off" enterkeyhint="search"
+        <input id="qDest" placeholder="Rechercher un lieu, une adresse…" autocomplete="off" enterkeyhint="search"
           aria-label="Rechercher un lieu ou un GeoCode" aria-controls="suggest" aria-expanded="false"/>
         <button type="button" class="repere-search-clear" id="btnClearSearch" aria-label="Effacer la recherche" hidden>×</button>
         <button id="btnChercher" aria-label="Chercher">
@@ -141,8 +142,8 @@
       <div class="repere-sheet-head">
         <div class="repere-sheet-heading">
           <span class="repere-eyebrow">REPÈRE MAPS · EXPLORER</span>
-          <h2>Explorer les environs</h2>
-          <p>Découvrez les lieux autour de vous</p>
+          <h2>Explorez autour de vous</h2>
+          <p>Découvrez les repères, commerces et services utiles.</p>
         </div>
         <button type="button" class="repere-sheet-toggle" id="repereSheetToggle" aria-expanded="true" aria-controls="repereSheetContent" aria-label="Réduire le panneau Explorer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
@@ -156,7 +157,12 @@
         <span>Itinéraires et lieux enregistrés</span>
         <svg viewBox="0 0 24 24" aria-hidden="true" class="repere-shortcut-arrow"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2"/></svg>
       </button>
-      <div class="repere-sheet-content" id="repereSheetContent">
+      <div class="repere-preview-actions" aria-label="Accès rapides à la navigation et aux couches">
+<button type="button" id="reperePreviewRoute">↗ Itinéraire</button>
+<button type="button" id="reperePreviewSatellite">▧ Satellite</button>
+</div>
+<div class="repere-preview-contribution"><strong>🌍 Enrichissons la carte ensemble</strong><p>Proposez un lieu public pour améliorer RepèreMaps et GeoDeliver.</p><a href="/repere-ci/preview/contribuer.html">＋ Ajouter un lieu</a><small>Prototype : aucune contribution envoyée à l’API.</small></div>
+<div class="repere-sheet-content" id="repereSheetContent">
       <div class="repere-coverage-note" id="repereCoverageNote" role="status" hidden>
         <span class="repere-coverage-icon" aria-hidden="true">📍</span>
         <div class="repere-coverage-copy">
@@ -173,6 +179,12 @@
           <button type="button" data-repere-category="station"><span aria-hidden="true">⛽</span><b>Essence</b></button>
           <button type="button" data-repere-category="banque"><span aria-hidden="true">🏦</span><b>Banques</b></button>
         </div>
+      </div>
+      <div class="repere-contribution-entry repere-contribution-legacy" style="margin:12px 0 16px;padding:15px 16px;border-radius:18px;background:#e7f5ee;border:1px solid #b9e2ce;color:#173b30">
+        <strong style="display:block;margin-bottom:5px">🌍 Enrichir la carte ensemble</strong>
+        <p style="font-size:13px;line-height:1.5;margin:0 0 10px">Proposez un lieu public pour améliorer les repères de votre pays. Les contributions seront vérifiées avant publication.</p>
+        <a href="/repere-ci/preview/contribuer.html" style="display:inline-block;background:#087b58;color:white;padding:11px 15px;border-radius:12px;text-decoration:none;font-weight:700">＋ Ajouter un lieu public</a>
+        <small style="display:block;margin-top:8px">Prototype : brouillons enregistrés sur votre appareil, sans envoi à l’API.</small>
       </div>
       <div class="duo">
         <button class="p" id="btnAllerPartager">
@@ -375,8 +387,8 @@
     <button data-scr="scrPartager">
       <svg viewBox="0 0 24 24"><path d="M4 12v8h16v-8"/><path d="M12 3v11M8 7l4-4 4 4"/></svg><span>Trajets</span>
     </button>
-    <button type="button" id="tabContribuer" data-scr="scrSignaler" aria-label="Contribuer : ajouter un lieu public">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg><span>Contribuer</span>
+    <button data-scr="scrSignaler">
+      <svg viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4"/></svg><span>Contribuer</span>
     </button>
     <button data-scr="scrProfil">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profil</span>
@@ -495,16 +507,56 @@
   }
 </script>
 <script>
-/* RepèreMaps : contribution depuis la navigation principale.
-   La fonction Signaler reste disponible via le bouton de la carte. */
 (function(){
-  const tab=document.getElementById('tabContribuer');
-  if(!tab)return;
-  tab.addEventListener('click',function(event){
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    window.location.assign('/repere-ci/preview/contribuer.html');
-  },true);
+const route=document.getElementById('reperePreviewRoute'),sat=document.getElementById('reperePreviewSatellite');
+route?.addEventListener('click',()=>{const field=document.getElementById('qDest');field?.focus();});
+sat?.addEventListener('click',()=>document.getElementById('repereLayersToggle')?.click());
+const tabs=document.querySelectorAll('#tabs button');
+if(tabs[1])tabs[1].addEventListener('click',(event)=>{event.preventDefault();event.stopImmediatePropagation();document.getElementById('reperePreviewRoute')?.click();},true);
+if(tabs[2])tabs[2].addEventListener('click',(event)=>{event.preventDefault();event.stopImmediatePropagation();window.location.href='/repere-ci/preview/contribuer.html';},true);
+})();
+</script>
+
+<script>
+/* Preview only: swipe the Explorer header to move between compact, half and expanded. */
+(()=>{
+ const root=document.getElementById('scrCarte'),sheet=document.getElementById('feuilleBas');
+ const head=sheet?.querySelector('.repere-sheet-head'),toggle=document.getElementById('repereSheetToggle');
+ if(!root||!sheet||!head||!toggle)return;
+ const mobile=()=>matchMedia('(max-width:899px)').matches;
+ const sync=()=>{document.documentElement.style.setProperty('--repere-sheet-h',Math.ceil(sheet.getBoundingClientRect().height)+'px');};
+ let state='compact',start=null;
+ function setState(next){
+   state=next;
+   root.classList.toggle('sheet-collapsed',next==='compact');
+   root.classList.toggle('repere-sheet-half',next==='half');
+   toggle.setAttribute('aria-expanded',String(next!=='compact'));
+   toggle.setAttribute('aria-label',next==='compact'?'Développer le panneau Explorer':'Réduire le panneau Explorer');
+   sheet.scrollTop=0;
+   requestAnimationFrame(sync);
+ }
+ // Existing button handler stays in place; preview uses a three-position cycle.
+ toggle.addEventListener('click',e=>{
+   if(!mobile())return;
+   e.stopImmediatePropagation();
+   setState(state==='compact'?'half':state==='half'?'expanded':'compact');
+ },true);
+ head.addEventListener('touchstart',e=>{
+   if(!mobile()||e.touches.length!==1||e.target.closest('button'))return;
+   start={y:e.touches[0].clientY,x:e.touches[0].clientX};
+ },{passive:true});
+ head.addEventListener('touchend',e=>{
+   if(!start||!mobile())return;
+   const dy=e.changedTouches[0].clientY-start.y,dx=e.changedTouches[0].clientX-start.x;
+   start=null;
+   if(Math.abs(dy)<42||Math.abs(dy)<Math.abs(dx)*1.4)return;
+   const states=['compact','half','expanded'];
+   const idx=states.indexOf(state);
+   setState(states[Math.max(0,Math.min(2,idx+(dy<0?1:-1)))]);
+ },{passive:true});
+ window.addEventListener('resize',sync,{passive:true});
+ // Default to map-first presentation.
+ setState('compact');
 })();
 </script>
 </body>
