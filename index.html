@@ -511,8 +511,8 @@ const route=document.getElementById('reperePreviewRoute'),sat=document.getElemen
 route?.addEventListener('click',()=>{const field=document.getElementById('qDest');field?.focus();document.getElementById('repereSheetToggle')?.click();});
 sat?.addEventListener('click',()=>document.getElementById('repereLayersToggle')?.click());
 const tabs=document.querySelectorAll('#tabs button');
-if(tabs[1]){tabs[1].addEventListener('click',()=>{setTimeout(()=>{document.querySelector('#tabs button[data-scr="scrCarte"]')?.click();document.getElementById('qDest')?.focus();},0);});}
-if(tabs[2]){tabs[2].addEventListener('click',()=>{setTimeout(()=>{document.querySelector('#tabs button[data-scr="scrCarte"]')?.click();document.querySelector('.repere-preview-contribution a')?.click();},0);});}
+if(tabs[1])tabs[1].addEventListener('click',(event)=>{event.preventDefault();event.stopImmediatePropagation();document.getElementById('reperePreviewRoute')?.click();},true);
+if(tabs[2])tabs[2].addEventListener('click',(event)=>{event.preventDefault();event.stopImmediatePropagation();window.location.href='prototype/contribution.html';},true);
 })();
 </script>
 </body>
