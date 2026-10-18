@@ -161,7 +161,7 @@
 <button type="button" id="reperePreviewRoute">↗ Itinéraire</button>
 <button type="button" id="reperePreviewSatellite">▧ Satellite</button>
 </div>
-<div class="repere-preview-contribution"><strong>🌍 Enrichissons la carte ensemble</strong><p>Proposez un lieu public pour améliorer RepèreMaps et GeoDeliver.</p><a href="prototype/contribution.html">＋ Ajouter un lieu</a><small>Prototype : aucune contribution envoyée à l’API.</small></div>
+<div class="repere-preview-contribution"><strong>🌍 Enrichissons la carte ensemble</strong><p>Proposez un lieu public pour améliorer RepèreMaps et GeoDeliver.</p><a href="/repere-ci/preview/contribuer.html">＋ Ajouter un lieu</a><small>Prototype : aucune contribution envoyée à l’API.</small></div>
 <div class="repere-sheet-content" id="repereSheetContent">
       <div class="repere-coverage-note" id="repereCoverageNote" role="status" hidden>
         <span class="repere-coverage-icon" aria-hidden="true">📍</span>
@@ -183,7 +183,7 @@
       <div class="repere-contribution-entry repere-contribution-legacy" style="margin:12px 0 16px;padding:15px 16px;border-radius:18px;background:#e7f5ee;border:1px solid #b9e2ce;color:#173b30">
         <strong style="display:block;margin-bottom:5px">🌍 Enrichir la carte ensemble</strong>
         <p style="font-size:13px;line-height:1.5;margin:0 0 10px">Proposez un lieu public pour améliorer les repères de votre pays. Les contributions seront vérifiées avant publication.</p>
-        <a href="prototype/contribution.html" style="display:inline-block;background:#087b58;color:white;padding:11px 15px;border-radius:12px;text-decoration:none;font-weight:700">＋ Ajouter un lieu public</a>
+        <a href="/repere-ci/preview/contribuer.html" style="display:inline-block;background:#087b58;color:white;padding:11px 15px;border-radius:12px;text-decoration:none;font-weight:700">＋ Ajouter un lieu public</a>
         <small style="display:block;margin-top:8px">Prototype : brouillons enregistrés sur votre appareil, sans envoi à l’API.</small>
       </div>
       <div class="duo">
@@ -513,7 +513,7 @@ route?.addEventListener('click',()=>{const field=document.getElementById('qDest'
 sat?.addEventListener('click',()=>document.getElementById('repereLayersToggle')?.click());
 const tabs=document.querySelectorAll('#tabs button');
 if(tabs[1])tabs[1].addEventListener('click',(event)=>{event.preventDefault();event.stopImmediatePropagation();document.getElementById('reperePreviewRoute')?.click();},true);
-if(tabs[2])tabs[2].addEventListener('click',(event)=>{event.preventDefault();event.stopImmediatePropagation();window.location.href='prototype/contribution.html';},true);
+if(tabs[2])tabs[2].addEventListener('click',(event)=>{event.preventDefault();event.stopImmediatePropagation();window.location.href='/repere-ci/preview/contribuer.html';},true);
 })();
 </script>
 
