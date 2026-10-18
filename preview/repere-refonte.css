@@ -103,3 +103,14 @@
 #app .tabs button span{font-size:12px}
 }
 @media(min-width:900px){#scrCarte .repere-preview-actions,#scrCarte .repere-preview-contribution{display:none}}
+
+/* Preview only: draggable-feeling three-step explorer with a visible map */
+@media(max-width:899px){
+ #scrCarte .repere-sheet-head{touch-action:pan-y;user-select:none}
+ #scrCarte .feuille-bas{transition:max-height .22s ease,padding .22s ease;overscroll-behavior:contain}
+ #scrCarte.repere-sheet-half:not(.sheet-collapsed) .feuille-bas{max-height:46dvh;overflow-y:auto}
+ #scrCarte.sheet-collapsed .feuille-bas{max-height:82px;overflow:hidden}
+ #scrCarte.sheet-collapsed .repere-sheet-content{display:none!important}
+ #scrCarte .repere-preview-actions button{min-height:48px}
+ #scrCarte .repere-preview-contribution a{min-height:48px}
+}
