@@ -508,7 +508,7 @@
 <script>
 (function(){
 const route=document.getElementById('reperePreviewRoute'),sat=document.getElementById('reperePreviewSatellite');
-route?.addEventListener('click',()=>{const field=document.getElementById('qDest');field?.focus();document.getElementById('repereSheetToggle')?.click();});
+route?.addEventListener('click',()=>{const field=document.getElementById('qDest');field?.focus();});
 sat?.addEventListener('click',()=>document.getElementById('repereLayersToggle')?.click());
 const tabs=document.querySelectorAll('#tabs button');
 if(tabs[1])tabs[1].addEventListener('click',(event)=>{event.preventDefault();event.stopImmediatePropagation();document.getElementById('reperePreviewRoute')?.click();},true);
