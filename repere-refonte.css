@@ -1,4 +1,3 @@
-@import url("./repere-mobile-v3.css");
 /* RepèreMaps — refonte mobile : carte prioritaire, aucun changement de moteur GPS. */
 @media (max-width:899px){
  #scrCarte{--repere-sheet-h:118px}
@@ -71,3 +70,16 @@
  #scrCarte .repere-3d-controls{right:24px}
  #app .tabs{bottom:16px;z-index:600}
 }
+
+
+/* Mobile map refinement for iOS and Android */
+@media(max-width:899px){
+#scrCarte .repere-topbar{background:rgba(255,255,255,.97);box-shadow:0 12px 34px rgba(12,49,39,.15);backdrop-filter:blur(18px)}
+#scrCarte .chercher{background:#fff;border:1px solid #d9eae2;box-shadow:0 10px 32px rgba(12,49,39,.12)}
+#scrCarte .chercher input{font-size:16px!important}
+#scrCarte .feuille-bas{background:#fff;box-shadow:0 -10px 40px rgba(16,59,46,.13);-webkit-overflow-scrolling:touch}
+#scrCarte .repere-contribution-entry a{min-height:44px;display:inline-flex!important;align-items:center;touch-action:manipulation}
+#scrCarte button,#app .tabs button{touch-action:manipulation}
+}
+@media(max-width:380px){#scrCarte .repere-brand-copy small{display:none}}
+@media(prefers-reduced-motion:reduce){#scrCarte *{animation:none!important;transition:none!important}}
