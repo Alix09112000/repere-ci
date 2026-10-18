@@ -1,0 +1,200 @@
+{
+  "version": 1,
+  "scope": "Afrique de l’Ouest — couverture progressive",
+  "coordinates": "[longitude, latitude] (WGS84)",
+  "note": "Centres indicatifs, non officiels. L'inscription dans cette liste ne signifie pas que les données cartographiques sont déjà disponibles.",
+  "regions": [
+    {
+      "id": "ci-abidjan",
+      "country": "CI",
+      "countryName": "Côte d’Ivoire",
+      "city": "Abidjan",
+      "center": [
+        -4.0083,
+        5.3599
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "tg-lome",
+      "country": "TG",
+      "countryName": "Togo",
+      "city": "Lomé",
+      "center": [
+        1.2228,
+        6.1319
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "bj-cotonou",
+      "country": "BJ",
+      "countryName": "Bénin",
+      "city": "Cotonou",
+      "center": [
+        2.3912,
+        6.3703
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "bf-ouagadougou",
+      "country": "BF",
+      "countryName": "Burkina Faso",
+      "city": "Ouagadougou",
+      "center": [
+        -1.5197,
+        12.3714
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "gh-accra",
+      "country": "GH",
+      "countryName": "Ghana",
+      "city": "Accra",
+      "center": [
+        -0.187,
+        5.6037
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "sn-dakar",
+      "country": "SN",
+      "countryName": "Sénégal",
+      "city": "Dakar",
+      "center": [
+        -17.4677,
+        14.7167
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "ml-bamako",
+      "country": "ML",
+      "countryName": "Mali",
+      "city": "Bamako",
+      "center": [
+        -8.0029,
+        12.6392
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "ng-lagos",
+      "country": "NG",
+      "countryName": "Nigeria",
+      "city": "Lagos",
+      "center": [
+        3.3792,
+        6.5244
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "gn-conakry",
+      "country": "GN",
+      "countryName": "Guinée",
+      "city": "Conakry",
+      "center": [
+        -13.5784,
+        9.6412
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "ne-niamey",
+      "country": "NE",
+      "countryName": "Niger",
+      "city": "Niamey",
+      "center": [
+        2.1098,
+        13.5116
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "gm-banjul",
+      "country": "GM",
+      "countryName": "Gambie",
+      "city": "Banjul",
+      "center": [
+        -16.578,
+        13.4549
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "gw-bissau",
+      "country": "GW",
+      "countryName": "Guinée-Bissau",
+      "city": "Bissau",
+      "center": [
+        -15.5984,
+        11.8636
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "sl-freetown",
+      "country": "SL",
+      "countryName": "Sierra Leone",
+      "city": "Freetown",
+      "center": [
+        -13.2317,
+        8.4657
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "lr-monrovia",
+      "country": "LR",
+      "countryName": "Liberia",
+      "city": "Monrovia",
+      "center": [
+        -10.7972,
+        6.3156
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "mr-nouakchott",
+      "country": "MR",
+      "countryName": "Mauritanie",
+      "city": "Nouakchott",
+      "center": [
+        -15.9785,
+        18.0735
+      ],
+      "zoom": 11,
+      "status": "planned"
+    },
+    {
+      "id": "cv-praia",
+      "country": "CV",
+      "countryName": "Cap-Vert",
+      "city": "Praia",
+      "center": [
+        -23.5087,
+        14.9331
+      ],
+      "zoom": 11,
+      "status": "planned"
+    }
+  ]
+}
