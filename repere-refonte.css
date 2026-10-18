@@ -70,3 +70,47 @@
  #scrCarte .repere-3d-controls{right:24px}
  #app .tabs{bottom:16px;z-index:600}
 }
+
+
+/* Mobile map refinement for iOS and Android */
+@media(max-width:899px){
+#scrCarte .repere-topbar{background:rgba(255,255,255,.97);box-shadow:0 12px 34px rgba(12,49,39,.15);backdrop-filter:blur(18px)}
+#scrCarte .chercher{background:#fff;border:1px solid #d9eae2;box-shadow:0 10px 32px rgba(12,49,39,.12)}
+#scrCarte .chercher input{font-size:16px!important}
+#scrCarte .feuille-bas{background:#fff;box-shadow:0 -10px 40px rgba(16,59,46,.13);-webkit-overflow-scrolling:touch}
+#scrCarte .repere-contribution-entry a{min-height:44px;display:inline-flex!important;align-items:center;touch-action:manipulation}
+#scrCarte button,#app .tabs button{touch-action:manipulation}
+}
+@media(max-width:380px){#scrCarte .repere-brand-copy small{display:none}}
+@media(prefers-reduced-motion:reduce){#scrCarte *{animation:none!important;transition:none!important}}
+
+/* Approved mobile preview alignment: keeps Leaflet and existing app handlers */
+@media(max-width:899px){
+#scrCarte .repere-brand-copy small{display:block;font-size:10px;letter-spacing:1.1px}
+#scrCarte .repere-topbar{border-radius:19px;padding:12px}
+#scrCarte .chercher{border-radius:16px}
+#scrCarte .feuille-bas{border-radius:25px 25px 0 0}
+#scrCarte .repere-sheet-heading h2{font-size:22px}
+#scrCarte .repere-preview-actions{display:flex;gap:8px;margin:10px 0 12px}
+#scrCarte .repere-preview-actions button{flex:1;min-height:45px;border:0;border-radius:13px;background:#e7f4ec;color:#087d60;font-weight:750;font-size:14px}
+#scrCarte .repere-preview-actions button:first-child{background:#087d60;color:white}
+#scrCarte .repere-preview-contribution{background:#e8f7ee;border:1px solid #c8e8d4;border-radius:16px;padding:13px;margin:10px 0 13px}
+#scrCarte .repere-preview-contribution strong{display:block;font-size:14px}
+#scrCarte .repere-preview-contribution p{font-size:13px;color:#637c70;line-height:1.5;margin:7px 0}
+#scrCarte .repere-preview-contribution a{display:inline-flex;align-items:center;min-height:44px;border:0;border-radius:12px;padding:11px 13px;background:#087d60;color:white;text-decoration:none;font-weight:700}
+#scrCarte .repere-preview-contribution small{display:block;color:#637c70;font-size:11px;margin-top:6px}
+#scrCarte .repere-contribution-legacy{display:none!important}
+#app .tabs button span{font-size:12px}
+}
+@media(min-width:900px){#scrCarte .repere-preview-actions,#scrCarte .repere-preview-contribution{display:none}}
+
+/* Preview only: draggable-feeling three-step explorer with a visible map */
+@media(max-width:899px){
+ #scrCarte .repere-sheet-head{touch-action:pan-y;user-select:none}
+ #scrCarte .feuille-bas{transition:max-height .22s ease,padding .22s ease;overscroll-behavior:contain}
+ #scrCarte.repere-sheet-half:not(.sheet-collapsed) .feuille-bas{max-height:46dvh;overflow-y:auto}
+ #scrCarte.sheet-collapsed .feuille-bas{max-height:82px;overflow:hidden}
+ #scrCarte.sheet-collapsed .repere-sheet-content{display:none!important}
+ #scrCarte .repere-preview-actions button{min-height:48px}
+ #scrCarte .repere-preview-contribution a{min-height:48px}
+}
