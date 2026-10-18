@@ -516,5 +516,48 @@ if(tabs[1])tabs[1].addEventListener('click',(event)=>{event.preventDefault();eve
 if(tabs[2])tabs[2].addEventListener('click',(event)=>{event.preventDefault();event.stopImmediatePropagation();window.location.href='prototype/contribution.html';},true);
 })();
 </script>
+
+<script>
+/* Preview only: swipe the Explorer header to move between compact, half and expanded. */
+(()=>{
+ const root=document.getElementById('scrCarte'),sheet=document.getElementById('feuilleBas');
+ const head=sheet?.querySelector('.repere-sheet-head'),toggle=document.getElementById('repereSheetToggle');
+ if(!root||!sheet||!head||!toggle)return;
+ const mobile=()=>matchMedia('(max-width:899px)').matches;
+ const sync=()=>{document.documentElement.style.setProperty('--repere-sheet-h',Math.ceil(sheet.getBoundingClientRect().height)+'px');};
+ let state='compact',start=null;
+ function setState(next){
+   state=next;
+   root.classList.toggle('sheet-collapsed',next==='compact');
+   root.classList.toggle('repere-sheet-half',next==='half');
+   toggle.setAttribute('aria-expanded',String(next!=='compact'));
+   toggle.setAttribute('aria-label',next==='compact'?'Développer le panneau Explorer':'Réduire le panneau Explorer');
+   sheet.scrollTop=0;
+   requestAnimationFrame(sync);
+ }
+ // Existing button handler stays in place; preview uses a three-position cycle.
+ toggle.addEventListener('click',e=>{
+   if(!mobile())return;
+   e.stopImmediatePropagation();
+   setState(state==='compact'?'half':state==='half'?'expanded':'compact');
+ },true);
+ head.addEventListener('touchstart',e=>{
+   if(!mobile()||e.touches.length!==1||e.target.closest('button'))return;
+   start={y:e.touches[0].clientY,x:e.touches[0].clientX};
+ },{passive:true});
+ head.addEventListener('touchend',e=>{
+   if(!start||!mobile())return;
+   const dy=e.changedTouches[0].clientY-start.y,dx=e.changedTouches[0].clientX-start.x;
+   start=null;
+   if(Math.abs(dy)<42||Math.abs(dy)<Math.abs(dx)*1.4)return;
+   const states=['compact','half','expanded'];
+   const idx=states.indexOf(state);
+   setState(states[Math.max(0,Math.min(2,idx+(dy<0?1:-1)))]);
+ },{passive:true});
+ window.addEventListener('resize',sync,{passive:true});
+ // Default to map-first presentation.
+ setState('compact');
+})();
+</script>
 </body>
 </html>
