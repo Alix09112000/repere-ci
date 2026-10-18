@@ -1,3 +1,4 @@
+@import url("./repere-mobile-v3.css");
 /* RepèreMaps — refonte mobile : carte prioritaire, aucun changement de moteur GPS. */
 @media (max-width:899px){
  #scrCarte{--repere-sheet-h:118px}
