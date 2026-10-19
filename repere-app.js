@@ -1362,6 +1362,26 @@ function proposer(items) {
   afficherSuggestions();
 }
 
+/* Villes régionales : complément local, sans dépendance au géocodeur ivoirien. */
+function villesRegionales(query) {
+  const catalogue = window.RepereWestAfrica;
+  if (!catalogue || !Array.isArray(catalogue.cities)) return [];
+  const normaliser = (v) => String(v || '').normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  const terme = normaliser(query);
+  if (terme.length < 2) return [];
+  return catalogue.cities.filter((ville) => {
+    const pays = (catalogue.countries || []).find((p) => p.code === ville.country);
+    return normaliser(ville.name).includes(terme) ||
+      normaliser(ville.name + ' ' + (pays ? pays.name : ville.country)).includes(terme);
+  }).slice(0, 8).map((ville) => {
+    const pays = (catalogue.countries || []).find((p) => p.code === ville.country);
+    return { nom: ville.name, ville: ville.name, lat: ville.lat, lng: ville.lng,
+      etiquette: 'Centre-ville indicatif',
+      sous: (pays ? pays.name : ville.country) + ' · Centre-ville indicatif' };
+  });
+}
+
 async function chercherDestination() {
   clearTimeout(minuteur);
   const q = $('qDest').value.trim();
@@ -1387,16 +1407,20 @@ async function chercherDestination() {
   try {
     const d = await Api.lieux(q, 12, Geo.derniere);
     if (demande !== numeroRecherche || $('qDest').value.trim() !== q) return;
-    proposer((d.lieux || []).map((l) => ({
+    const resultatsApi = (d.lieux || []).map((l) => ({
       nom: l.nom, etiquette: l.libelle, libelle: l.libelle,
       sous: [l.libelle, l.commune, l.distance_m != null ? fmt.distance(l.distance_m) : null]
         .filter(Boolean).join(' · '),
       commune: l.commune, quartier: l.quartier, ville: l.ville,
       geocode: l.geocode, distance_m: l.distance_m, lat: l.lat, lng: l.lng
-    })));
+    }));
+    proposer(resultatsApi.concat(villesRegionales(q).filter((ville) =>
+      !resultatsApi.some((lieu) => lieu.lat === ville.lat && lieu.lng === ville.lng))));
   } catch (e) {
     if (demande !== numeroRecherche) return;
-    etatRecherche('La recherche est indisponible. Vérifiez votre connexion puis réessayez.');
+    const villes = villesRegionales(q);
+    if (villes.length) proposer(villes);
+    else etatRecherche('La recherche est indisponible. Vérifiez votre connexion puis réessayez.');
   }
 }
 
