@@ -51,9 +51,9 @@ function init(){
  }
  function renderCities(){
    cityResults.replaceChildren();
-   const term=cityInput.value.trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();
+   const term=cityInput.value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
    if(term.length<2)return;
-   const hits=CITIES.filter(([name,code])=>name.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().includes(term)||COUNTRIES.find(c=>c[0]===code)?.[1].normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().includes(term)).slice(0,7);
+   const hits=CITIES.filter(([name,code])=>name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(term)||COUNTRIES.find(c=>c[0]===code)?.[1].normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(term)).slice(0,7);
    if(!hits.length){const msg=document.createElement('p');msg.textContent='Ville absente de cette liste de démarrage.';cityResults.appendChild(msg);return}
    hits.forEach(([name,code,lat,lng])=>{const country=COUNTRIES.find(c=>c[0]===code)?.[1]||code;const b=document.createElement('button');b.type='button';b.textContent=name+' · '+country;b.addEventListener('click',()=>moveTo(lat,lng,12,name));cityResults.appendChild(b)});
  }
@@ -61,6 +61,12 @@ function init(){
  panel.append(select,go,cityLabel,cityInput,cityResults,note);
  mapRoot.append(button,panel);
  button.addEventListener('click',()=>{panel.hidden=!panel.hidden;button.setAttribute('aria-expanded',String(!panel.hidden))});
+ // Fermer le panneau si l'utilisateur revient à la carte ou à un autre outil.
+ document.addEventListener('pointerdown',e=>{
+   if(!panel.hidden && !panel.contains(e.target) && e.target!==button){
+     panel.hidden=true;button.setAttribute('aria-expanded','false');
+   }
+ });
  select.addEventListener('change',()=>{go.disabled=!select.value});
  go.addEventListener('click',()=>{
   const item=COUNTRIES.find(c=>c[0]===select.value);if(!item)return;
