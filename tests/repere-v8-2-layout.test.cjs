@@ -12,8 +12,9 @@ test('le bandeau de marque est un véritable élément HTML avant la recherche',
  const search=html.indexOf('class="chercher"');
  const map=html.indexOf('id="map"');
  assert.ok(map<header&&header<search);
- assert.match(html,/<strong>Repère Maps<\/strong>/);
- assert.match(html,/Explorez la Côte d’Ivoire/);
+ assert.match(html,/<strong>RepèreMaps<\/strong>/);
+ assert.match(html,/AFRIQUE DE L’OUEST/);
+ assert.match(html,/Explorez autour de vous/);
  assert.ok(html.indexOf('id="repereLayersToggle"')>header);
  assert.ok(html.indexOf('id="repereLayersToggle"')<search);
 });
@@ -70,7 +71,7 @@ test('la dernière feuille de style et le cache PWA sont bien à jour',()=>{
  const latest=html.indexOf('href="repere-v8-2.css"');
  assert.ok(old>=0 && latest>old);
  const sw=read('sw.js');
- assert.match(sw,/repere-ci-coque-v19/);
+ assert.match(sw,/repere-ci-coque-v20/);
  assert.match(sw,/'\.\/repere-v8-2\.css'/);
 });
 test('pas de faux bouton satellite et aucune perte des contrôles existants',()=>{
