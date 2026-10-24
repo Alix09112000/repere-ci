@@ -332,6 +332,7 @@ function coordonneesLieu(l) {
 function ouvrirFicheLieu(l) {
   const nom = String(l.nom || l.geocode || 'Lieu sans nom');
   const coord = coordonneesLieu(l);
+  const centreIndicatif = l.centreIndicatif === true;
   const corps = ouvrirFeuille(nom);
   const bloc = document.createElement('div');
   bloc.className = 'repere-place-card';
@@ -361,6 +362,12 @@ function ouvrirFicheLieu(l) {
     code.append(identifier, value);
     bloc.appendChild(code);
   }
+  if (centreIndicatif) {
+    const avertissement = document.createElement('p');
+    avertissement.className = 'repere-place-description';
+    avertissement.textContent = 'Position indicative du centre-ville : ce point ne représente pas une adresse précise. Aucun itinéraire vers ce point n’est proposé.';
+    bloc.appendChild(avertissement);
+  }
   corps.appendChild(bloc);
 
   const boutons = document.createElement('div');
@@ -379,12 +386,15 @@ function ouvrirFicheLieu(l) {
     feuille.classList.remove('on');
     window.allerVers(coord.lat, coord.lng, nom);
   });
-  if (!coord) trajet.disabled = true;
+  if (!coord || centreIndicatif) {
+    trajet.disabled = true;
+    if (centreIndicatif) trajet.title = 'Itinéraire indisponible vers un centre-ville indicatif';
+  }
   const carte = bouton('Voir sur la carte', 'secondaire', () => {
     if (!coord) return toast('Coordonnées de ce lieu indisponibles.');
     feuille.classList.remove('on');
     allerA('scrCarte');
-    map.setView([coord.lat, coord.lng], 17, { animate: true });
+    map.setView([coord.lat, coord.lng], centreIndicatif ? 12 : 17, { animate: true });
   });
   if (!coord) carte.disabled = true;
   if (l.geocode) bouton('Copier le GeoCode', 'secondaire', async () => {
@@ -1377,7 +1387,7 @@ function villesRegionales(query) {
   }).slice(0, 8).map((ville) => {
     const pays = (catalogue.countries || []).find((p) => p.code === ville.country);
     return { nom: ville.name, ville: ville.name, lat: ville.lat, lng: ville.lng,
-      etiquette: 'Centre-ville indicatif',
+      centreIndicatif: true, etiquette: 'Centre-ville indicatif',
       sous: (pays ? pays.name : ville.country) + ' · Centre-ville indicatif' };
   });
 }
