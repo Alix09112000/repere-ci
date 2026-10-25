@@ -59,6 +59,32 @@ test('un service absent ne remplace pas marche ou vélo par voiture', async () =
   assert.match(result.source,/OSRM/);
   assert.equal(urls.length,5);
 });
+test('les coordonnées absentes ne sont pas converties en (0, 0)', () => {
+  const m = moteur(async()=>({ok:true,json:async()=>fixture}));
+  for (const valeur of [null, undefined, '', ' ', false, true, NaN, Infinity]) {
+    assert.throws(
+      () => m.requeteValhalla({lat:valeur,lng:-4.020},destination,{}),
+      /Coordonnées du trajet invalides/
+    );
+    assert.throws(
+      () => m.requeteValhalla(origine,{lat:5.354,lng:valeur},{}),
+      /Coordonnées du trajet invalides/
+    );
+  }
+  assert.throws(() => m.requeteValhalla({lng:-4.020},destination,{}),
+    /Coordonnées du trajet invalides/);
+  assert.throws(() => m.requeteValhalla(origine,{lat:91,lng:0},{}),
+    /Coordonnées du trajet invalides/);
+  assert.throws(() => m.requeteValhalla(origine,{lat:0,lng:181},{}),
+    /Coordonnées du trajet invalides/);
+  const zero = m.requeteValhalla({lat:0,lng:0},destination,{});
+  assert.equal(zero.locations[0].lat,0);
+  assert.equal(zero.locations[0].lon,0);
+  const chaine = m.requeteValhalla({lat:'5.348',lng:'-4.020'},destination,{});
+  assert.equal(chaine.locations[0].lat,5.348);
+  assert.equal(chaine.locations[0].lon,-4.020);
+});
+
 test('les réponses corrompues sont rejetées', () => {
   const m=moteur(async()=>({ok:true,json:async()=>fixture}));
   assert.throws(()=>m.validerReponse({routes:[{duration:1,distance:3} ]},{}));
