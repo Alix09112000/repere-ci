@@ -27,8 +27,13 @@ const RepereRouting = (() => {
   }
 
   function validPoint(p) {
-    return !!p && Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lng)) &&
-      Math.abs(Number(p.lat)) <= 90 && Math.abs(Number(p.lng)) <= 180;
+    if (!p || typeof p !== 'object') return false;
+    // Number(null), Number('') et Number(false) valent 0 : ne jamais
+    // transformer une coordonnée absente en destination (0, 0).
+    const coordonneeValide = (valeur, borne) =>
+      (typeof valeur === 'number' || (typeof valeur === 'string' && valeur.trim() !== '')) &&
+      Number.isFinite(Number(valeur)) && Math.abs(Number(valeur)) <= borne;
+    return coordonneeValide(p.lat, 90) && coordonneeValide(p.lng, 180);
   }
 
   function requeteValhalla(depart, arrivee, choix) {
