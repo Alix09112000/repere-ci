@@ -30,7 +30,7 @@ test('design V8 chargé en dernier et présent dans le cache PWA',()=>{
  const newer=html.indexOf('href="repere-v8.css"');
  assert.ok(older>=0 && newer>older);
  const sw=read('sw.js');
- assert.match(sw,/repere-ci-coque-v19/);
+ assert.match(sw,/const CACHE = 'repere-ci-coque-v\d+';/);
  assert.match(sw,/'\.\/repere-v8\.css'/);
  assert.match(css,/#scrCarte \.repere-layers-panel\[hidden\]/);
 });
