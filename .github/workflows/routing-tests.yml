@@ -4,6 +4,7 @@ on:
     paths:
       - 'repere-routing.js'
       - 'repere-app.js'
+      - 'repere-west-africa.js'
       - 'repere-poi.js'
       - 'repere-3d.js'
       - 'tests/**'
@@ -13,6 +14,7 @@ on:
     paths:
       - 'repere-routing.js'
       - 'repere-app.js'
+      - 'repere-west-africa.js'
       - 'tests/**'
       - '.github/workflows/routing-tests.yml'
 jobs:
@@ -29,6 +31,7 @@ jobs:
         run: |
           node --check repere-routing.js
           node --check repere-app.js
+          node --check repere-west-africa.js
           node --check repere-poi.js
           node --check repere-3d.js
       - name: Exécuter les tests de routage
