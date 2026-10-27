@@ -26,7 +26,26 @@ const CITIES=[
 ['Banjul','GM',13.4549,-16.5790],['Nouakchott','MR',18.0735,-15.9582],
 ['Praia','CV',14.9331,-23.5133]
 ];
-window.RepereWestAfrica={cities:CITIES.map(([name,country,lat,lng])=>({name,country,lat,lng})),countries:COUNTRIES.map(([code,name,lat,lng,zoom])=>({code,name,lat,lng,zoom}))};
+// Recherche locale indicative : accents et variantes d'apostrophes/tirets
+// sont équivalents. Aucun résultat n'est présenté comme une adresse exacte.
+function normaliser(texte){
+ return String(texte ?? '').normalize('NFD')
+   .replace(/[\u0300-\u036f]/g,'').toLowerCase()
+   .replace(/['’`´‐‑–—-]/g,' ')
+   .replace(/\s+/g,' ').trim();
+}
+function chercherVilles(recherche,limite=7){
+ const terme=normaliser(recherche);
+ if(terme.length<2)return [];
+ const maximum=Number.isInteger(limite)?Math.max(0,Math.min(50,limite)):7;
+ return CITIES.filter(([nom,code])=>{
+   const pays=COUNTRIES.find(c=>c[0]===code);
+   return normaliser(nom).includes(terme) ||
+     normaliser(pays?.[1]).includes(terme) ||
+     code.toLowerCase()===terme;
+ }).slice(0,maximum).map(([name,country,lat,lng])=>({name,country,lat,lng}));
+}
+window.RepereWestAfrica={cities:CITIES.map(([name,country,lat,lng])=>({name,country,lat,lng})),countries:COUNTRIES.map(([code,name,lat,lng,zoom])=>({code,name,lat,lng,zoom})),searchCities:chercherVilles};
 function init(){
  const mapRoot=document.getElementById('scrCarte');
  if(!mapRoot||document.getElementById('repereCountryButton'))return;
@@ -51,11 +70,10 @@ function init(){
  }
  function renderCities(){
    cityResults.replaceChildren();
-   const term=cityInput.value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-   if(term.length<2)return;
-   const hits=CITIES.filter(([name,code])=>name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(term)||COUNTRIES.find(c=>c[0]===code)?.[1].normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(term)).slice(0,7);
+   if(normaliser(cityInput.value).length<2)return;
+   const hits=chercherVilles(cityInput.value);
    if(!hits.length){const msg=document.createElement('p');msg.textContent='Ville absente de cette liste de démarrage.';cityResults.appendChild(msg);return}
-   hits.forEach(([name,code,lat,lng])=>{const country=COUNTRIES.find(c=>c[0]===code)?.[1]||code;const b=document.createElement('button');b.type='button';b.textContent=name+' · '+country;b.addEventListener('click',()=>moveTo(lat,lng,12,name));cityResults.appendChild(b)});
+   hits.forEach(({name,country:code,lat,lng})=>{const country=COUNTRIES.find(c=>c[0]===code)?.[1]||code;const b=document.createElement('button');b.type='button';b.textContent=name+' · '+country;b.addEventListener('click',()=>moveTo(lat,lng,12,name));cityResults.appendChild(b)});
  }
  cityInput.addEventListener('input',renderCities);
  panel.append(select,go,cityLabel,cityInput,cityResults,note);
