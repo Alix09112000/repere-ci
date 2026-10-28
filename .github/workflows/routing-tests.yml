@@ -7,6 +7,8 @@ on:
       - 'repere-west-africa.js'
       - 'repere-poi.js'
       - 'repere-3d.js'
+      - 'data/arcgis/**'
+      - 'docs/arcgis-pro.md'
       - 'tests/**'
       - '.github/workflows/routing-tests.yml'
   push:
@@ -15,6 +17,8 @@ on:
       - 'repere-routing.js'
       - 'repere-app.js'
       - 'repere-west-africa.js'
+      - 'data/arcgis/**'
+      - 'docs/arcgis-pro.md'
       - 'tests/**'
       - '.github/workflows/routing-tests.yml'
 jobs:

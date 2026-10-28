@@ -1,0 +1,17 @@
+country_code,country_name,latitude,longitude,zoom,coordinate_status,source
+BJ,Bénin,9.3077,2.3158,7,approximate_center,repere-west-africa.js
+BF,Burkina Faso,12.2383,-1.5616,6,approximate_center,repere-west-africa.js
+CV,Cap-Vert,16.5388,-23.0418,7,approximate_center,repere-west-africa.js
+CI,Côte d’Ivoire,7.54,-5.55,6,approximate_center,repere-west-africa.js
+GM,Gambie,13.4432,-15.3101,8,approximate_center,repere-west-africa.js
+GH,Ghana,7.9465,-1.0232,6,approximate_center,repere-west-africa.js
+GN,Guinée,9.9456,-9.6966,6,approximate_center,repere-west-africa.js
+GW,Guinée-Bissau,11.8037,-15.1804,7,approximate_center,repere-west-africa.js
+LR,Liberia,6.4281,-9.4295,7,approximate_center,repere-west-africa.js
+ML,Mali,17.5707,-3.9962,5,approximate_center,repere-west-africa.js
+MR,Mauritanie,21.0079,-10.9408,5,approximate_center,repere-west-africa.js
+NE,Niger,17.6078,8.0817,5,approximate_center,repere-west-africa.js
+NG,Nigeria,9.082,8.6753,6,approximate_center,repere-west-africa.js
+SN,Sénégal,14.4974,-14.4524,7,approximate_center,repere-west-africa.js
+SL,Sierra Leone,8.4606,-11.7799,7,approximate_center,repere-west-africa.js
+TG,Togo,8.6195,0.8248,7,approximate_center,repere-west-africa.js
