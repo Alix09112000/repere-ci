@@ -1,0 +1,725 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bénin",
+        "country_code": "BJ",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 7
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.3158,
+          9.3077
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Burkina Faso",
+        "country_code": "BF",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 6
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5616,
+          12.2383
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cap-Vert",
+        "country_code": "CV",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 7
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -23.0418,
+          16.5388
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Côte d’Ivoire",
+        "country_code": "CI",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 6
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -5.55,
+          7.54
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gambie",
+        "country_code": "GM",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 8
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -15.3101,
+          13.4432
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ghana",
+        "country_code": "GH",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 6
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.0232,
+          7.9465
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Guinée",
+        "country_code": "GN",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 6
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.6966,
+          9.9456
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Guinée-Bissau",
+        "country_code": "GW",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 7
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -15.1804,
+          11.8037
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Liberia",
+        "country_code": "LR",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 7
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.4295,
+          6.4281
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Mali",
+        "country_code": "ML",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 5
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -3.9962,
+          17.5707
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Mauritanie",
+        "country_code": "MR",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 5
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -10.9408,
+          21.0079
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Niger",
+        "country_code": "NE",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 5
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.0817,
+          17.6078
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nigeria",
+        "country_code": "NG",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 6
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6753,
+          9.082
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sénégal",
+        "country_code": "SN",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 7
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -14.4524,
+          14.4974
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sierra Leone",
+        "country_code": "SL",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 7
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -11.7799,
+          8.4606
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Togo",
+        "country_code": "TG",
+        "kind": "country_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": 7
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.8248,
+          8.6195
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Dakar",
+        "country_code": "SN",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -17.4677,
+          14.7167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Saint-Louis",
+        "country_code": "SN",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -16.4818,
+          16.0326
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Abidjan",
+        "country_code": "CI",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -4.0083,
+          5.3599
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Yamoussoukro",
+        "country_code": "CI",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -5.2893,
+          6.8276
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bouaké",
+        "country_code": "CI",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -5.03,
+          7.6894
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Accra",
+        "country_code": "GH",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.187,
+          5.6037
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kumasi",
+        "country_code": "GH",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6244,
+          6.6885
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lomé",
+        "country_code": "TG",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.2228,
+          6.1319
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cotonou",
+        "country_code": "BJ",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.3912,
+          6.3703
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Porto-Novo",
+        "country_code": "BJ",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.6289,
+          6.4969
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lagos",
+        "country_code": "NG",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.3792,
+          6.5244
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Abuja",
+        "country_code": "NG",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.3986,
+          9.0765
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kano",
+        "country_code": "NG",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.592,
+          12.0022
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ouagadougou",
+        "country_code": "BF",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5197,
+          12.3714
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bobo-Dioulasso",
+        "country_code": "BF",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -4.2979,
+          11.1771
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bamako",
+        "country_code": "ML",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.0029,
+          12.6392
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Niamey",
+        "country_code": "NE",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.1254,
+          13.5116
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Conakry",
+        "country_code": "GN",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -13.5784,
+          9.6412
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bissau",
+        "country_code": "GW",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -15.617,
+          11.8817
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Monrovia",
+        "country_code": "LR",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -10.8074,
+          6.3156
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Freetown",
+        "country_code": "SL",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -13.2317,
+          8.4657
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Banjul",
+        "country_code": "GM",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -16.579,
+          13.4549
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nouakchott",
+        "country_code": "MR",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -15.9582,
+          18.0735
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Praia",
+        "country_code": "CV",
+        "kind": "city_center",
+        "coordinate_status": "approximate_center",
+        "source": "repere-west-africa.js",
+        "zoom": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -23.5133,
+          14.9331
+        ]
+      }
+    }
+  ]
+}
