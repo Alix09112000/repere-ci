@@ -8,6 +8,7 @@ on:
       - 'repere-poi.js'
       - 'repere-3d.js'
       - 'data/arcgis/**'
+      - 'scripts/**'
       - 'docs/arcgis-pro.md'
       - 'tests/**'
       - '.github/workflows/routing-tests.yml'
@@ -17,7 +18,10 @@ on:
       - 'repere-routing.js'
       - 'repere-app.js'
       - 'repere-west-africa.js'
+      - 'repere-poi.js'
+      - 'repere-3d.js'
       - 'data/arcgis/**'
+      - 'scripts/**'
       - 'docs/arcgis-pro.md'
       - 'tests/**'
       - '.github/workflows/routing-tests.yml'
@@ -38,5 +42,7 @@ jobs:
           node --check repere-west-africa.js
           node --check repere-poi.js
           node --check repere-3d.js
+          node --check scripts/export-arcgis-geojson.cjs
+          node scripts/export-arcgis-geojson.cjs --check
       - name: Exécuter les tests de routage
         run: node --test tests/*.test.cjs
