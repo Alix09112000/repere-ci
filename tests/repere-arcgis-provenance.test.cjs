@@ -7,7 +7,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const provenance = require('../data/arcgis/provenance.json');
-const geojson = require('../data/arcgis/centers.geojson');
+const geojson = JSON.parse(fs.readFileSync(path.join(root, 'data/arcgis/centers.geojson'), 'utf8'));
 const lines = file => fs.readFileSync(path.join(root, file), 'utf8').trimEnd().split(/\r?\n/);
 
 test('métadonnées ArcGIS : précision, licence et date non inventées', () => {
