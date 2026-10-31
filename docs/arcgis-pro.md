@@ -40,3 +40,17 @@ Le workflow GitHub Actions exécute également les tests sous `tests/`. Les CSV 
 Les CSV reflètent le catalogue `repere-west-africa.js` au moment du commit. Le test `tests/repere-arcgis-csv.test.cjs` détecte une divergence entre ces fichiers et le catalogue. Le test `tests/repere-arcgis-geojson.test.cjs` détecte une divergence entre le GeoJSON et les CSV. Exécuter les contrôles ci-dessus après toute modification des centres.
 
 Pour des analyses spatiales fiables (densité, distances, accessibilité), utiliser ensuite des jeux de données officiels ou OSM contrôlés, documenter leurs licences, leur date et leur précision, et valider la couverture pays par pays.
+
+## Traçabilité machine-lisible des exports
+
+Le fichier `data/arcgis/provenance.json` inventorie les trois exports (CSV pays, CSV villes et GeoJSON), les 16 codes pays et les nombres d'enregistrements attendus. Il précise le référentiel WGS 84, l'ordre longitude-latitude en GeoJSON et le statut `approximate_center`.
+
+**Attention :** `source_catalog` désigne le catalogue interne RepèreMaps et non la source originale des coordonnées. Aucune source externe indépendante, licence amont, date de relevé ou précision métrique n'est actuellement vérifiée. Les champs `external_source_verified` et `source_license_verified` restent donc à `false`, et les valeurs inconnues à `null`. Ne pas présenter ces centres comme des données officielles ou adaptées au routage.
+
+Après une mise à jour des exports, vérifier aussi la concordance des métadonnées :
+
+```bash
+node --test tests/repere-arcgis-provenance.test.cjs
+```
+
+Les métadonnées ne confèrent aucun droit de redistribution sur des jeux de données externes futurs : vérifier séparément leur provenance et leur licence avant toute intégration.
