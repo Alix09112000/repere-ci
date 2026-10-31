@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "collection": "repere-west-africa-indicative-centers",
+  "coordinate_reference_system": "EPSG:4326",
+  "geojson_coordinate_order": "longitude,latitude",
+  "source_catalog": "repere-west-africa.js",
+  "source_scope": "internal_application_catalog_only",
+  "external_source_verified": false,
+  "source_license_verified": false,
+  "source_observation_date": null,
+  "positional_accuracy_meters": null,
+  "coordinate_status": "approximate_center",
+  "country_codes": [
+    "BF",
+    "BJ",
+    "CI",
+    "CV",
+    "GH",
+    "GM",
+    "GN",
+    "GW",
+    "LR",
+    "ML",
+    "MR",
+    "NE",
+    "NG",
+    "SL",
+    "SN",
+    "TG"
+  ],
+  "datasets": [
+    {
+      "path": "data/arcgis/countries.csv",
+      "format": "CSV",
+      "record_count": 16,
+      "geometry": "indicative_country_center"
+    },
+    {
+      "path": "data/arcgis/cities.csv",
+      "format": "CSV",
+      "record_count": 24,
+      "geometry": "indicative_city_center"
+    },
+    {
+      "path": "data/arcgis/centers.geojson",
+      "format": "GeoJSON",
+      "record_count": 40,
+      "geometry": "Point"
+    }
+  ],
+  "limitations": [
+    "Coordinates are approximate display centers, not verified geocoded addresses.",
+    "Country centers are not administrative boundaries.",
+    "No independent positional accuracy, observation date, or upstream license has been established.",
+    "Not suitable for routing, cadastral decisions, precise distance measurement, or verified service coverage."
+  ]
+}
