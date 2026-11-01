@@ -27,6 +27,12 @@ function feature(row, kind) {
   if (row.coordinate_status !== 'approximate_center' || row.source !== 'repere-west-africa.js') {
     throw new Error('Provenance ou précision non reconnue : ' + (row.city_name || row.country_name));
   }
+  // Ne pas accepter les syntaxes implicites de Number() (hexadécimal, exposant, etc.).
+  // Les exports ArcGIS sont documentés comme des décimaux à point.
+  const decimal = /^-?(?:\\d+(?:\\.\\d*)?|\\.\\d+)$/;
+  if (!decimal.test(row.latitude) || !decimal.test(row.longitude)) {
+    throw new Error('Coordonnées non décimales : ' + (row.city_name || row.country_name));
+  }
   const lat = Number(row.latitude);
   const lon = Number(row.longitude);
   if (!Number.isFinite(lat) || Math.abs(lat) > 90 ||
@@ -82,4 +88,4 @@ if (require.main === module) {
     console.log('Export GeoJSON généré : ' + outputPath);
   }
 }
-module.exports = { generate };
+module.exports = { generate, feature };
