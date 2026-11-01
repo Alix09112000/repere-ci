@@ -4,7 +4,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { generate } = require('../scripts/export-arcgis-geojson.cjs');
+const { generate, feature } = require('../scripts/export-arcgis-geojson.cjs');
 
 const file = path.join(__dirname, '../data/arcgis/centers.geojson');
 const text = fs.readFileSync(file, 'utf8');
@@ -45,4 +45,30 @@ test('WGS84 : longitude avant latitude, provenance et précision non surestimée
       assert.equal(feature.properties.zoom, null);
     }
   }
+});
+
+test('export : accepte les coordonnées décimales signées sans altérer les valeurs', () => {
+  const row = {
+    city_name: 'Test', country_code: 'SN',
+    latitude: '.5', longitude: '-0.1870',
+    coordinate_status: 'approximate_center', source: 'repere-west-africa.js'
+  };
+  assert.deepEqual(feature(row, 'city').geometry.coordinates, [-0.187, 0.5]);
+  assert.deepEqual(feature({ ...row, latitude: '0', longitude: '0' }, 'city').geometry.coordinates, [0, 0]);
+});
+
+test('export : refuse les formats numériques implicites et les coordonnées hors limites', () => {
+  const row = {
+    city_name: 'Test', country_code: 'SN',
+    latitude: '5.0', longitude: '-1.0',
+    coordinate_status: 'approximate_center', source: 'repere-west-africa.js'
+  };
+  for (const latitude of ['0x10', '1e1', '+5', ' 5', 'Infinity', 'NaN']) {
+    assert.throws(() => feature({ ...row, latitude }, 'city'), /Coordonnées non décimales/, latitude);
+  }
+  for (const longitude of ['0x10', '1e1', '+5', ' 5', 'Infinity', 'NaN']) {
+    assert.throws(() => feature({ ...row, longitude }, 'city'), /Coordonnées non décimales/, longitude);
+  }
+  assert.throws(() => feature({ ...row, latitude: '91' }, 'city'), /Coordonnées invalides/);
+  assert.throws(() => feature({ ...row, longitude: '-181' }, 'city'), /Coordonnées invalides/);
 });
