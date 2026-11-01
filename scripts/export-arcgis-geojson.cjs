@@ -29,7 +29,7 @@ function feature(row, kind) {
   }
   // Ne pas accepter les syntaxes implicites de Number() (hexadécimal, exposant, etc.).
   // Les exports ArcGIS sont documentés comme des décimaux à point.
-  const decimal = /^-?(?:\\d+(?:\\.\\d*)?|\\.\\d+)$/;
+  const decimal = /^-?(?:\d+(?:\.\d*)?|\.\d+)$/;
   if (!decimal.test(row.latitude) || !decimal.test(row.longitude)) {
     throw new Error('Coordonnées non décimales : ' + (row.city_name || row.country_name));
   }
