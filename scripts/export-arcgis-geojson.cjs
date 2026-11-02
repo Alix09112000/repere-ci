@@ -57,16 +57,23 @@ function feature(row, kind) {
   };
 }
 
+function validateCatalog(countries, cities) {
+  const codes = new Set(countries.map(row => row.country_code));
+  const cityKeys = new Set(cities.map(row => JSON.stringify([row.country_code, row.city_name])));
+  if (countries.length !== 16 || codes.size !== 16 || cities.length !== 24 ||
+      countries.some(row => !/^[A-Z]{2}$/.test(row.country_code)) ||
+      cities.some(row => !codes.has(row.country_code)) ||
+      cityKeys.size !== cities.length) {
+    throw new Error('Catalogue de pays ou villes incohérent');
+  }
+}
+
 function generate() {
   const countries = rows('countries.csv',
     ['country_code', 'country_name', 'latitude', 'longitude', 'zoom', 'coordinate_status', 'source']);
   const cities = rows('cities.csv',
     ['city_name', 'country_code', 'latitude', 'longitude', 'coordinate_status', 'source']);
-  const codes = new Set(countries.map(row => row.country_code));
-  if (countries.length !== 16 || codes.size !== 16 || cities.length !== 24 ||
-      cities.some(row => !codes.has(row.country_code))) {
-    throw new Error('Catalogue de pays ou villes incohérent');
-  }
+  validateCatalog(countries, cities);
   const features = [
     ...countries.map(row => feature(row, 'country')),
     ...cities.map(row => feature(row, 'city'))
@@ -88,4 +95,4 @@ if (require.main === module) {
     console.log('Export GeoJSON généré : ' + outputPath);
   }
 }
-module.exports = { generate, feature };
+module.exports = { generate, feature, validateCatalog };
