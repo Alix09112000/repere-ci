@@ -4,7 +4,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { generate, feature } = require('../scripts/export-arcgis-geojson.cjs');
+const { generate, feature, validateCatalog } = require('../scripts/export-arcgis-geojson.cjs');
 
 const file = path.join(__dirname, '../data/arcgis/centers.geojson');
 const text = fs.readFileSync(file, 'utf8');
@@ -71,4 +71,27 @@ test('export : refuse les formats numériques implicites et les coordonnées hor
   }
   assert.throws(() => feature({ ...row, latitude: '91' }, 'city'), /Coordonnées invalides/);
   assert.throws(() => feature({ ...row, longitude: '-181' }, 'city'), /Coordonnées invalides/);
+});
+
+test('export : refuse les doublons de villes et les codes pays incohérents', () => {
+  const countries = geojson.features
+    .filter(f => f.properties.kind === 'country_center')
+    .map(f => ({ country_code: f.properties.country_code }));
+  const cities = geojson.features
+    .filter(f => f.properties.kind === 'city_center')
+    .map(f => ({ country_code: f.properties.country_code, city_name: f.properties.name }));
+
+  assert.doesNotThrow(() => validateCatalog(countries, cities));
+
+  const duplicated = cities.map(row => ({ ...row }));
+  duplicated[1] = { ...duplicated[0] };
+  assert.throws(() => validateCatalog(countries, duplicated), /Catalogue de pays ou villes incohérent/);
+
+  const malformedCountries = countries.map(row => ({ ...row }));
+  malformedCountries[0].country_code = 'sN';
+  assert.throws(() => validateCatalog(malformedCountries, cities), /Catalogue de pays ou villes incohérent/);
+
+  const unknownCountryCities = cities.map(row => ({ ...row }));
+  unknownCountryCities[0].country_code = 'ZZ';
+  assert.throws(() => validateCatalog(countries, unknownCountryCities), /Catalogue de pays ou villes incohérent/);
 });
