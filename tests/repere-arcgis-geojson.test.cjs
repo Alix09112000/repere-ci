@@ -95,3 +95,18 @@ test('export : refuse les doublons de villes et les codes pays incohérents', ()
   unknownCountryCities[0].country_code = 'ZZ';
   assert.throws(() => validateCatalog(countries, unknownCountryCities), /Catalogue de pays ou villes incohérent/);
 });
+
+test('export : détecte les doublons de villes malgré accents, casse et espaces', () => {
+  const countries = geojson.features
+    .filter(f => f.properties.kind === 'country_center')
+    .map(f => ({ country_code: f.properties.country_code }));
+  const cities = geojson.features
+    .filter(f => f.properties.kind === 'city_center')
+    .map(f => ({ country_code: f.properties.country_code, city_name: f.properties.name }));
+  const variant = cities.map(row => ({ ...row }));
+  variant[1] = { ...variant[0], city_name: '  ' + variant[0].city_name.toUpperCase() + '  ' };
+  assert.throws(() => validateCatalog(countries, variant), /Catalogue de pays ou villes incohérent/);
+  const accented = cities.map(row => ({ ...row }));
+  accented[1] = { ...accented[0], city_name: accented[0].city_name + '\u0301' };
+  assert.throws(() => validateCatalog(countries, accented), /Catalogue de pays ou villes incohérent/);
+});
