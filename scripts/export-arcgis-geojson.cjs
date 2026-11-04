@@ -60,8 +60,9 @@ function feature(row, kind) {
 function validateCatalog(countries, cities) {
   const codes = new Set(countries.map(row => row.country_code));
   const normalizeCity = name => String(name).normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().replace(/\s+/g, ' ').toLowerCase();
+  const countryNames = new Set(countries.map(row => normalizeCity(row.country_name)));
   const cityKeys = new Set(cities.map(row => JSON.stringify([row.country_code, normalizeCity(row.city_name)])));
-  if (countries.length !== 16 || codes.size !== 16 || cities.length !== 24 ||
+  if (countries.length !== 16 || codes.size !== 16 || countryNames.size !== 16 || cities.length !== 24 ||
       countries.some(row => !/^[A-Z]{2}$/.test(row.country_code)) ||
       cities.some(row => !codes.has(row.country_code)) ||
       cityKeys.size !== cities.length) {
