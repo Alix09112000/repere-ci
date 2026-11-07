@@ -39,8 +39,9 @@ function feature(row, kind) {
       !Number.isFinite(lon) || Math.abs(lon) > 180) {
     throw new Error('Coordonnées invalides : ' + (row.city_name || row.country_name));
   }
+  // Le zoom doit être un entier décimal explicite, sans notation hexadécimale ou exponentielle.
   const zoom = kind === 'country' ? Number(row.zoom) : null;
-  if (kind === 'country' && (!Number.isInteger(zoom) || zoom < 1 || zoom > 18)) {
+  if (kind === 'country' && (!/^(?:[1-9]|1[0-8])$/.test(String(row.zoom)) || !Number.isInteger(zoom))) {
     throw new Error('Zoom invalide : ' + row.country_name);
   }
   return {
