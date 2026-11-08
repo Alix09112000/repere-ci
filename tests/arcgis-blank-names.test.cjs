@@ -39,3 +39,14 @@ test('compatibilité : noms de pays absents dans les anciens jeux de tests', () 
   countries.forEach(row => delete row.country_name);
   assert.doesNotThrow(() => validateCatalog(countries, cities));
 });
+
+test('nom de ville absent (undefined ou null) refusé', () => {
+  for (const missing of [undefined, null]) {
+    const { countries, cities } = catalog();
+    cities[0].city_name = missing;
+    assert.throws(() => validateCatalog(countries, cities), /Catalogue/);
+  }
+  const { countries, cities } = catalog();
+  delete cities[0].city_name;
+  assert.throws(() => validateCatalog(countries, cities), /Catalogue/);
+});
