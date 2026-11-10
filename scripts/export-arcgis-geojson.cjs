@@ -24,6 +24,9 @@ function rows(filename, columns) {
 }
 
 function feature(row, kind) {
+  if (kind !== 'country' && kind !== 'city') {
+    throw new Error('Type de centre GeoJSON invalide : ' + String(kind));
+  }
   if (row.coordinate_status !== 'approximate_center' || row.source !== 'repere-west-africa.js') {
     throw new Error('Provenance ou précision non reconnue : ' + (row.city_name || row.country_name));
   }
