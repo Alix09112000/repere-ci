@@ -67,8 +67,9 @@ function validateCatalog(countries, cities) {
   const namedCountries = countries.filter(row => row.country_name != null);
   const countryNames = new Set(namedCountries.map(row => normalizeCity(row.country_name)));
   // Les anciens tests peuvent omettre country_name, mais un nom fourni ne doit pas être vide.
-  const invalidNames = namedCountries.some(row => !normalizeCity(row.country_name)) ||
-    cities.some(row => row.city_name == null || !normalizeCity(row.city_name));
+  // Les noms doivent rester des chaînes : String(123) ou String({}) masquerait une donnée invalide.
+  const invalidNames = namedCountries.some(row => typeof row.country_name !== 'string' || !normalizeCity(row.country_name)) ||
+    cities.some(row => typeof row.city_name !== 'string' || !normalizeCity(row.city_name));
   const cityKeys = new Set(cities.map(row => JSON.stringify([row.country_code, normalizeCity(row.city_name)])));
   if (countries.length !== 16 || codes.size !== 16 || countryNames.size !== namedCountries.length || invalidNames || cities.length !== 24 ||
       countries.some(row => !/^[A-Z]{2}$/.test(row.country_code)) ||
