@@ -27,6 +27,11 @@ function feature(row, kind) {
   if (kind !== 'country' && kind !== 'city') {
     throw new Error('Type de centre GeoJSON invalide : ' + String(kind));
   }
+  // Un appel direct ne doit pas produire de Feature sans nom géographique valide.
+  const name = kind === 'country' ? row.country_name : row.city_name;
+  if (typeof name !== 'string' || !name.trim()) {
+    throw new Error('Nom géographique invalide pour ' + kind);
+  }
   // Garantir un code ISO alpha-2 exploitable même lors d'un appel direct à feature().
   if (typeof row.country_code !== 'string' || !/^[A-Z]{2}$/.test(row.country_code)) {
     throw new Error('Code pays invalide : ' + String(row.country_code));
