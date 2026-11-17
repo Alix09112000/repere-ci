@@ -28,10 +28,10 @@ Après modification du catalogue JavaScript et synchronisation des CSV, régén�
 ```bash
 node scripts/export-arcgis-geojson.cjs
 node scripts/export-arcgis-geojson.cjs --check
-node --test tests/repere-arcgis-*.test.cjs
+node --test tests/*.test.cjs
 ```
 
-Le workflow GitHub Actions exécute également les tests sous `tests/`. Les CSV et le GeoJSON ne doivent pas être utilisés comme des frontières, des adresses précises ou des données routières.
+La commande `node --test tests/*.test.cjs` couvre aussi les tests récents `arcgis-*.test.cjs`, notamment le contrôle de synchronisation de `centers.geojson`, que l'ancien motif `repere-arcgis-*` ignorait. Exécuter depuis la racine du dépôt dans un environnement avec Node.js. Le workflow GitHub Actions exécute également les tests sous `tests/`. Les CSV et le GeoJSON ne doivent pas être utilisés comme des frontières, des adresses précises ou des données routières.
 
 ## Limites et provenance
 
