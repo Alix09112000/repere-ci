@@ -43,7 +43,7 @@ test('GeoJSON : provenance et statut indicatif obligatoires', () => {
 });
 
 test('GeoJSON : zoom strict et absence de zoom pour les villes', () => {
-  for (const zoom of ['0', '19', '01', '1e1', '0xA']) {
+  for (const zoom of ['0', '19', '01', '1e1', '0xA', 7, ['7'], { toString: () => '7' }, null, undefined]) {
     assert.throws(() => feature({ ...base, zoom }, 'country'), /Zoom invalide/);
   }
   const city = feature({ ...base, city_name: 'Dakar' }, 'city');
