@@ -54,7 +54,7 @@ function feature(row, kind) {
   }
   // Le zoom doit être un entier décimal explicite, sans notation hexadécimale ou exponentielle.
   const zoom = kind === 'country' ? Number(row.zoom) : null;
-  if (kind === 'country' && (!/^(?:[1-9]|1[0-8])$/.test(String(row.zoom)) || !Number.isInteger(zoom))) {
+  if (kind === 'country' && (typeof row.zoom !== 'string' || !/^(?:[1-9]|1[0-8])$/.test(row.zoom) || !Number.isInteger(zoom))) {
     throw new Error('Zoom invalide : ' + row.country_name);
   }
   return {
